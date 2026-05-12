@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>دليل دراسي شامل — BudgetWise (FCAI Edition)</title>
+  <style>
+    :root{
+      --bg:#f8fafc;
+      --surface:#ffffff;
+      --ink:#0f172a;
+      --muted:#475569;
+      --border:#e2e8f0;
+      --primary:#6366f1;
+      --primary-700:#4f46e5;
+      --primary-50:#eef2ff;
+      --accent:#0ea5e9;
+      --success:#10b981;
+      --danger:#ef4444;
+      --warning:#f59e0b;
+      --code-bg:#0f172a;
+      --code-ink:#e2e8f0;
+      --radius:14px;
+      --shadow:0 4px 20px rgba(15,23,42,.08);
+      --shadow-lg:0 20px 60px rgba(15,23,42,.12);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+      font-family:"Segoe UI","Cairo","Tajawal","Noto Sans Arabic",system-ui,-apple-system,sans-serif;
+      line-height:1.8;font-size:16px;-webkit-font-smoothing:antialiased}
+
+    /* ====== Layout ====== */
+    .container{max-width:1080px;margin:0 auto;padding:0 1.25rem}
+    .hero{
+      background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#06b6d4 100%);
+      color:#fff;padding:3.5rem 1.25rem 4rem;text-align:center;
+      box-shadow:var(--shadow-lg);
+    }
+    .hero .badge{
+      display:inline-block;background:rgba(255,255,255,.18);
+      padding:.35rem .9rem;border-radius:999px;font-size:.85rem;
+      backdrop-filter:blur(6px);margin-bottom:1rem;letter-spacing:.02em;
+    }
+    .hero h1{font-size:2.4rem;margin:.25rem 0;font-weight:800;letter-spacing:-.01em}
+    .hero p{font-size:1.05rem;opacity:.95;max-width:720px;margin:.5rem auto 0}
+    .hero .meta{margin-top:1.5rem;font-size:.88rem;opacity:.85}
+
+    /* ====== Navigation ====== */
+    nav.toc{
+      position:sticky;top:0;background:rgba(255,255,255,.92);
+      backdrop-filter:blur(10px);border-bottom:1px solid var(--border);
+      z-index:10;padding:.75rem 1.25rem;box-shadow:0 2px 8px rgba(0,0,0,.04)
+    }
+    nav.toc ul{list-style:none;margin:0;padding:0;display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+    nav.toc a{
+      display:inline-block;padding:.4rem .85rem;font-size:.85rem;color:var(--muted);
+      text-decoration:none;border-radius:8px;font-weight:500;transition:all .15s
+    }
+    nav.toc a:hover{background:var(--primary-50);color:var(--primary-700)}
+
+    /* ====== Sections ====== */
+    section{padding:3rem 0;border-bottom:1px solid var(--border)}
+    section:last-of-type{border-bottom:none}
+    h2.section-title{
+      font-size:1.7rem;margin:0 0 .35rem;color:var(--ink);font-weight:700;
+      display:flex;align-items:center;gap:.6rem
+    }
+    h2.section-title .num{
+      font-size:.85rem;background:var(--primary);color:#fff;padding:.2rem .65rem;
+      border-radius:999px;font-weight:600
+    }
+    .subtitle{color:var(--muted);margin:0 0 1.75rem;font-size:.98rem}
+
+    h3{font-size:1.2rem;margin:1.75rem 0 .65rem;color:var(--primary-700);font-weight:700}
+    h4{font-size:1rem;margin:1.25rem 0 .5rem;color:var(--ink);font-weight:700}
+
+    p{margin:0 0 1rem;color:var(--ink)}
+    ul,ol{padding-right:1.25rem;margin:.5rem 0 1.25rem}
+    li{margin-bottom:.4rem}
+    strong{color:var(--ink);font-weight:700}
+    em{color:var(--primary-700);font-style:normal;font-weight:600}
+
+    /* ====== Inline English terms ====== */
+    code,.en{
+      direction:ltr;display:inline-block;
+      font-family:"JetBrains Mono","Fira Code","Consolas",monospace;
+      font-size:.88em;background:var(--primary-50);color:var(--primary-700);
+      padding:.08em .42em;border-radius:5px;font-weight:600
+    }
+    .en-strong{font-weight:700}
+
+    /* ====== Code blocks ====== */
+    pre{
+      direction:ltr;text-align:left;
+      background:var(--code-bg);color:var(--code-ink);
+      padding:1.1rem 1.25rem;border-radius:10px;overflow-x:auto;
+      font-family:"JetBrains Mono","Fira Code","Consolas",monospace;
+      font-size:.82rem;line-height:1.65;margin:.75rem 0 1.5rem;
+      box-shadow:var(--shadow)
+    }
+    pre code{background:transparent;color:inherit;padding:0;font-weight:400}
+    .code-caption{
+      display:block;font-size:.78rem;color:var(--muted);
+      margin-bottom:.3rem;font-style:italic
+    }
+
+    /* ====== Cards ====== */
+    .card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:var(--radius);padding:1.25rem 1.5rem;margin:1rem 0;
+      box-shadow:var(--shadow)
+    }
+    .card.tip{border-right:4px solid var(--success);background:#f0fdf4}
+    .card.warn{border-right:4px solid var(--warning);background:#fffbeb}
+    .card.danger{border-right:4px solid var(--danger);background:#fef2f2}
+    .card.info{border-right:4px solid var(--primary);background:var(--primary-50)}
+    .card-title{font-weight:700;margin-bottom:.4rem;font-size:.98rem;color:var(--ink)}
+
+    /* ====== Tables ====== */
+    .table-wrap{overflow-x:auto;margin:1rem 0 1.5rem}
+    table{width:100%;border-collapse:collapse;font-size:.92rem;background:var(--surface);
+      border-radius:10px;overflow:hidden;box-shadow:var(--shadow)}
+    th,td{padding:.7rem 1rem;text-align:right;border-bottom:1px solid var(--border)}
+    th{background:var(--primary-50);color:var(--primary-700);font-weight:700;font-size:.85rem}
+    tr:last-child td{border-bottom:none}
+    tr:hover td{background:var(--bg)}
+
+    /* ====== Q&A ====== */
+    .qa{margin-top:1rem}
+    .q-item{
+      background:var(--surface);border:1px solid var(--border);border-radius:12px;
+      margin-bottom:1rem;box-shadow:var(--shadow);overflow:hidden;
+      transition:transform .15s
+    }
+    .q-item:hover{transform:translateY(-2px)}
+    .q-head{
+      padding:1rem 1.25rem;background:linear-gradient(90deg,var(--primary-50),transparent);
+      cursor:pointer;display:flex;align-items:flex-start;gap:.7rem;
+      border-bottom:1px solid var(--border)
+    }
+    .q-num{
+      flex-shrink:0;background:var(--primary);color:#fff;width:1.85rem;height:1.85rem;
+      display:inline-flex;align-items:center;justify-content:center;border-radius:999px;
+      font-weight:700;font-size:.85rem
+    }
+    .q-text{font-weight:700;color:var(--ink);font-size:1rem}
+    .q-body{padding:1rem 1.25rem 1.25rem;color:var(--ink)}
+    .q-body p:last-child{margin-bottom:0}
+
+    /* ====== Diagram ====== */
+    .diagram{
+      background:#0f172a;color:#e2e8f0;direction:ltr;text-align:left;
+      font-family:"JetBrains Mono",monospace;font-size:.78rem;line-height:1.5;
+      padding:1.25rem;border-radius:10px;overflow-x:auto;white-space:pre;
+      margin:1rem 0 1.5rem;box-shadow:var(--shadow)
+    }
+
+    /* ====== Pill list ====== */
+    .pills{display:flex;flex-wrap:wrap;gap:.5rem;margin:.5rem 0 1rem}
+    .pill{
+      display:inline-flex;align-items:center;gap:.35rem;
+      background:var(--surface);border:1px solid var(--border);
+      padding:.3rem .75rem;border-radius:999px;font-size:.82rem;
+      color:var(--muted);font-weight:500
+    }
+    .pill .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--primary)}
+
+    footer{padding:2.5rem 1.25rem;text-align:center;color:var(--muted);font-size:.88rem}
+    footer .heart{color:var(--danger)}
+
+    @media (max-width:640px){
+      .hero h1{font-size:1.7rem}
+      h2.section-title{font-size:1.3rem}
+      h3{font-size:1.05rem}
+      section{padding:2rem 0}
+    }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     HERO
+============================================================ -->
+<header class="hero">
+  <span class="badge">FCAI · Year 2 · Software Engineering Track</span>
+  <h1>دليل دراسي شامل — BudgetWise</h1>
+  <p>تحليل معماري كامل لمشروع <strong>Personal Budgeting Web App</strong> — من الـ<span class="en">Frontend</span> للـ<span class="en">Backend</span> للـ<span class="en">Database</span>، مع جلسة <span class="en">Viva</span> على طريقة الـ<span class="en">TA</span>.</p>
+  <div class="meta">إعداد فني · <span class="en">Stack: Node.js + Express + TypeScript + MongoDB + Vanilla JS</span></div>
+</header>
+
+<!-- ============================================================
+     NAV
+============================================================ -->
+<nav class="toc">
+  <div class="container">
+    <ul>
+      <li><a href="#arch">١. <span class="en">Architecture</span></a></li>
+      <li><a href="#concepts">٢. <span class="en">Core Concepts</span></a></li>
+      <li><a href="#impl">٣. <span class="en">Implementation</span></a></li>
+      <li><a href="#qa">٤. <span class="en">Viva Q&amp;A</span></a></li>
+      <li><a href="#glossary">٥. <span class="en">Glossary</span></a></li>
+    </ul>
+  </div>
+</nav>
+
+<div class="container">
+
+<!-- ============================================================
+     SECTION 1 — ARCHITECTURE
+============================================================ -->
+<section id="arch">
+  <h2 class="section-title"><span class="num">1</span> نظرة معمارية على الـ <span class="en">Stack</span></h2>
+  <p class="subtitle">المشروع مبني على معمارية <span class="en">Three-Tier Client-Server</span> كلاسيكية: طبقة عرض في المتصفح، طبقة منطق على الخادم، وطبقة تخزين في قاعدة البيانات. كل طبقة منعزلة ومسؤولياتها واضحة.</p>
+
+  <div class="diagram">
+┌──────────────────────────────────────────────────────────────────────┐
+│  BROWSER (Presentation Tier)                                         │
+│  HTML5 · CSS3 · Vanilla ES2020                                       │
+│  - DOM rendering · fetch() · localStorage (JWT)                      │
+└────────────────────┬─────────────────────────────────────────────────┘
+                     │  HTTP/JSON (REST)  +  Authorization: Bearer
+                     ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  EXPRESS SERVER (Application Tier)  — Node.js · TypeScript           │
+│  Routes → Middleware (requireAuth) → Controllers → Services →        │
+│  → Repositories → Mongoose ODM                                       │
+└────────────────────┬─────────────────────────────────────────────────┘
+                     │  BSON (Mongo Wire Protocol)
+                     ▼
+┌──────────────────────────────────────────────────────────────────────┐
+│  MONGODB (Data Tier) — Document Store · Indexed Collections          │
+│  users · transactions · budgets                                      │
+└──────────────────────────────────────────────────────────────────────┘
+  </div>
+
+  <h3>١-١. الـ <span class="en">Presentation Tier</span> — المتصفح</h3>
+  <p>المتصفح هنا مش مجرد <span class="en">viewer</span> — ده <span class="en">runtime</span> كامل. كل صفحة <span class="en">HTML</span> فيها <span class="en">structure</span>، الـ<span class="en">CSS</span> بيتحكم في الـ<span class="en">visual layer</span>، والـ<span class="en">JavaScript</span> بيتعامل مع الـ<span class="en">DOM</span> كـ <span class="en">tree of nodes</span> ويعدّل عليه <span class="en">in-place</span>.</p>
+
+  <ul>
+    <li><strong><span class="en">HTML5</span>:</strong> بيوفّر <span class="en">semantic elements</span> زي <code>&lt;header&gt;</code>, <code>&lt;main&gt;</code>, <code>&lt;aside&gt;</code>, <code>&lt;section&gt;</code> — مهمة للـ<span class="en">accessibility</span> وللـ<span class="en">SEO</span>، ومش مجرد decoration.</li>
+    <li><strong><span class="en">CSS3</span>:</strong> بنستخدم <span class="en">custom properties</span> (المعروفة بـ <span class="en">CSS variables</span>) في <code>:root</code>، <span class="en">Flexbox</span> + <span class="en">CSS Grid</span> للـ<span class="en">layout</span>، و<span class="en">media queries</span> للـ<span class="en">responsive design</span>.</li>
+    <li><strong><span class="en">Vanilla JavaScript</span>:</strong> من غير <span class="en">framework</span> (لا React ولا Vue) — اعتمدنا على <span class="en">native DOM APIs</span>: <code>document.getElementById</code>, <code>addEventListener</code>, <code>fetch</code>, و<span class="en">event delegation</span>.</li>
+  </ul>
+
+  <div class="card info">
+    <div class="card-title">ليه <span class="en">Vanilla</span> مش <span class="en">framework</span>؟</div>
+    <p>المشروع <span class="en">academic</span> ومحدود الـ<span class="en">scope</span> — استخدام <span class="en">framework</span> هيضيف <span class="en">build pipeline</span>، <span class="en">virtual DOM overhead</span>، و<span class="en">learning curve</span> بدون فايدة حقيقية. الـ<span class="en">Vanilla</span> بيخلّيك فاهم تحت الكبوت بيحصل إيه — وده اللي اللجنة بتسأل عنه.</p>
+  </div>
+
+  <h3>١-٢. الـ <span class="en">Application Tier</span> — الـ <span class="en">Backend</span></h3>
+  <p>الـ<span class="en">Backend</span> مبني بـ <span class="en">Node.js</span> + <span class="en">Express</span> + <span class="en">TypeScript</span>. <span class="en">Node</span> بيدّينا <span class="en">single-threaded event loop</span> مع <span class="en">non-blocking I/O</span>، وده اللي يخلّيه ينفع لتطبيق فيه <span class="en">DB calls</span> كتيرة. <span class="en">Express</span> هو <span class="en">minimalist routing layer</span> فوق <span class="en">HTTP module</span> بتاع <span class="en">Node</span>. <span class="en">TypeScript</span> يدّينا <span class="en">static typing</span> + <span class="en">compile-time safety</span>.</p>
+
+  <h4>التقسيم الـ <span class="en">Layered</span> داخل السيرفر:</h4>
+  <div class="pills">
+    <span class="pill"><span class="dot"></span><span class="en">Routes</span></span>
+    <span class="pill"><span class="dot"></span><span class="en">Middleware</span></span>
+    <span class="pill"><span class="dot"></span><span class="en">Controllers</span></span>
+    <span class="pill"><span class="dot"></span><span class="en">Services</span></span>
+    <span class="pill"><span class="dot"></span><span class="en">Repositories</span></span>
+    <span class="pill"><span class="dot"></span><span class="en">Models</span></span>
+  </div>
+  <p>كل طبقة مسؤوليتها واضحة:</p>
+  <ul>
+    <li><span class="en">Routes</span>: بتربط الـ<span class="en">URL pattern</span> بالـ<span class="en">handler function</span>.</li>
+    <li><span class="en">Middleware</span>: بيشتغل قبل الـ<span class="en">handler</span> — في حالتنا الـ<span class="en">JWT verification</span>.</li>
+    <li><span class="en">Controllers</span>: <span class="en">HTTP-aware</span> — بيقرأوا الـ<span class="en">request</span> ويرجّعوا <span class="en">response</span>.</li>
+    <li><span class="en">Services</span>: فيها الـ<span class="en">business logic</span> مفصولة عن <span class="en">HTTP</span> — تقدر تستخدمها من <span class="en">CLI</span> أو <span class="en">cron job</span> بنفس السهولة.</li>
+    <li><span class="en">Repositories</span>: <span class="en">data access layer</span> — بتغلّف الـ<span class="en">Mongoose</span> queries.</li>
+    <li><span class="en">Models</span>: <span class="en">schemas</span> + <span class="en">validation</span>.</li>
+  </ul>
+
+  <h3>١-٣. الـ <span class="en">Data Tier</span> — <span class="en">MongoDB</span></h3>
+  <p>المشروع بيستخدم <span class="en">MongoDB</span> اللي هي <span class="en">document-oriented NoSQL database</span> — مش <span class="en">relational</span>. كل <span class="en">document</span> هو <span class="en">BSON object</span> (نسخة <span class="en">binary</span> من <span class="en">JSON</span>). نتعامل معاها من خلال <span class="en">Mongoose</span> — اللي هي <span class="en">ODM</span> (<span class="en">Object Document Mapper</span>) — نظير الـ<span class="en">ORM</span> في عالم الـ<span class="en">SQL</span>.</p>
+
+  <span class="code-caption">Schema definition with constraints — <span class="en">src/models/Transaction.ts</span></span>
+<pre><code>const TransactionSchema = new Schema&lt;Transaction&gt;({
+  userId:   { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+  type:     { type: String, required: true, enum: ['income', 'expense'], index: true },
+  amount:   { type: Number, required: true, min: 0.01, max: 9999999.99 },
+  category: { type: String, required: true, trim: true, maxlength: 50 },
+  dateTime: { type: Date,   required: true, default: () =&gt; new Date() },
+  description: { type: String, trim: true, maxlength: 200 },
+}, { timestamps: true });
+
+TransactionSchema.index({ userId: 1, dateTime: -1 });   // compound index</code></pre>
+
+  <div class="card tip">
+    <div class="card-title">ملاحظة مهمة — <span class="en">Relational vs Document</span></div>
+    <p>في <span class="en">SQL</span> لو عندك <span class="en">Users</span> و<span class="en">Transactions</span>، هتعمل <span class="en">FOREIGN KEY</span> + <span class="en">JOIN</span>. في <span class="en">MongoDB</span> ممكن إما تعمل <span class="en">referencing</span> (زي اللي عملناه بـ <code>userId: ObjectId</code>) أو <span class="en">embedding</span>. اختيارنا للـ<span class="en">referencing</span> لأن الـ<span class="en">transactions</span> ممكن تكبر جداً والـ<span class="en">embedded array</span> هتوصل لحدود الـ<span class="en">16 MB document limit</span>.</p>
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 2 — CORE CONCEPTS
+============================================================ -->
+<section id="concepts">
+  <h2 class="section-title"><span class="num">2</span> المفاهيم الـ<span class="en">Technical</span> الأساسية</h2>
+  <p class="subtitle">المفاهيم اللي مكتوبة في المشروع — مش بس <span class="en">syntax</span>، ده <span class="en">engineering decisions</span> ليها <span class="en">trade-offs</span>.</p>
+
+  <h3>٢-١. <span class="en">CRUD Operations</span></h3>
+  <p>الـ<span class="en">CRUD</span> هو <span class="en">Create / Read / Update / Delete</span>. في الـ<span class="en">REST API</span> بنعمل <span class="en">mapping</span> بينها وبين الـ<span class="en">HTTP verbs</span>:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th><span class="en">Verb</span></th><th><span class="en">Endpoint</span></th><th>الوظيفة</th></tr></thead>
+      <tbody>
+        <tr><td><code>POST</code></td><td><code>/api/v1/finance/transactions</code></td><td>إنشاء <span class="en">transaction</span> جديدة</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/v1/finance/transactions?q=...</code></td><td>قراءة مع <span class="en">filter/sort/paginate</span></td></tr>
+        <tr><td><code>PUT</code></td><td><code>/api/v1/finance/transactions/:id</code></td><td>تحديث (<span class="en">replace</span>)</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>/api/v1/finance/transactions/:id</code></td><td>حذف</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>ملاحظة: <code>PUT</code> ضد <code>PATCH</code> — الـ<span class="en">PUT</span> بيستبدل الـ<span class="en">resource</span> بالكامل (<span class="en">idempotent</span>)، أما <code>PATCH</code> بيعدّل جزء منه. مشروعنا بيستخدم <code>PUT</code> مع <span class="en">partial validation</span> عشان السهولة.</p>
+
+  <h3>٢-٢. <span class="en">Design Patterns</span> المستخدمة</h3>
+
+  <h4>(أ) <span class="en">Singleton Pattern</span></h4>
+  <p>كل الـ<span class="en">repositories</span> + <span class="en">FinanceManager</span> متنفّذين كـ <span class="en">Singletons</span> — يعني <span class="en">instance</span> واحدة فقط طول حياة الـ<span class="en">process</span>. الفائدة: مفيش <span class="en">redundant connections</span> ولا <span class="en">state duplication</span>.</p>
+  <span class="code-caption"><span class="en">Singleton in TypeScript</span></span>
+<pre><code>export class TransactionRepo {
+  private static instance: TransactionRepo | null = null;
+  private constructor() {}      // ← مفيش حد يقدر يعمل new من بره
+
+  static getInstance(): TransactionRepo {
+    if (!TransactionRepo.instance) {
+      TransactionRepo.instance = new TransactionRepo();
+    }
+    return TransactionRepo.instance;
+  }
+}</code></pre>
+
+  <h4>(ب) <span class="en">Observer Pattern</span></h4>
+  <p>الـ<span class="en">FinanceManager</span> بيـ<span class="en">extend</span> كلاس <span class="en">Subject</span> اللي عنده <span class="en">attach / detach / notify</span>. لما تضاف <span class="en">transaction</span>، الـ<span class="en">AlertSystem</span> (الـ<span class="en">Observer</span>) بيتعمله <span class="en">notify</span> ويسجّل alert. ده <span class="en">decoupling</span> — الـ<span class="en">FinanceManager</span> مش لازم يعرف مين بيسمعه.</p>
+
+  <h4>(ج) <span class="en">Strategy Pattern</span></h4>
+  <p>التصدير (<span class="en">export</span>) لـ <span class="en">CSV/PDF/Chart</span> متنفّذ كـ <span class="en">interchangeable strategies</span> بتطبق نفس الـ<span class="en">interface</span> (<span class="en">ExportStrategy</span>). تقدر تضيف <span class="en">JsonExport</span> بكره من غير ما تغير في الـ<span class="en">controller</span>.</p>
+
+  <h4>(د) <span class="en">Repository Pattern</span></h4>
+  <p>كل <span class="en">model</span> ليه <span class="en">Repository</span> بيغلّف الـ<span class="en">DB queries</span>. ده بيخلّي الـ<span class="en">business logic</span> مش متعلّقة بالـ<span class="en">DB engine</span> — لو قررنا نهاجر لـ <span class="en">PostgreSQL</span> بكره، التغيير هيكون في الـ<span class="en">Repositories</span> بس.</p>
+
+  <h3>٢-٣. <span class="en">Database Constraints</span> — <span class="en">Schema-Level Validation</span></h3>
+  <p>الـ<span class="en">Mongoose schema</span> بيدعم أنواع كتيرة من الـ<span class="en">constraints</span> اللي هي <span class="en">enforced</span> قبل ما الـ<span class="en">document</span> يتكتب في <span class="en">DB</span>:</p>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>الـ<span class="en">Constraint</span></th><th>الغرض</th><th>مثال من المشروع</th></tr></thead>
+      <tbody>
+        <tr><td><code>required</code></td><td>الـ<span class="en">field</span> لازم يتبعت</td><td><span class="en">email, passwordHash</span></td></tr>
+        <tr><td><code>unique</code></td><td><span class="en">DB-level uniqueness index</span></td><td><span class="en">User.email</span></td></tr>
+        <tr><td><code>min/max</code></td><td>حدود الرقم</td><td><span class="en">amount: min 0.01, max 9999999.99</span></td></tr>
+        <tr><td><code>enum</code></td><td>قائمة قيم محددة</td><td><span class="en">type: ['income','expense']</span></td></tr>
+        <tr><td><code>match</code></td><td><span class="en">regex pattern</span></td><td><span class="en">month: /^\d{4}-\d{2}$/</span></td></tr>
+        <tr><td><code>maxlength</code></td><td>طول الـ<span class="en">string</span></td><td><span class="en">description: 200</span></td></tr>
+        <tr><td><span class="en">compound index</span></td><td><span class="en">uniqueness over multiple fields</span></td><td><span class="en">Budget: (userId, category, month)</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>٢-٤. <span class="en">Authentication &amp; Middleware</span></h3>
+  <p>الـ<span class="en">authentication</span> بنعملها بـ <span class="en">JWT</span> (<span class="en">JSON Web Token</span>). الـ<span class="en">token</span> بيتولد بعد <span class="en">login</span>، بيتخزّن في الـ<span class="en">localStorage</span>، وبيتبعت في كل <span class="en">request</span> في الـ<span class="en">Authorization header</span> كـ <code>Bearer &lt;token&gt;</code>.</p>
+
+  <span class="code-caption"><span class="en">requireAuth Middleware</span></span>
+<pre><code>export function requireAuth(req, res, next) {
+  const header = req.header('Authorization');
+  const token  = header?.startsWith('Bearer ') ? header.slice(7) : null;
+  if (!token) return res.status(401).json({ error: 'Missing token' });
+  try {
+    const decoded = jwt.verify(token, CONFIG.JWT_SECRET);
+    req.user = { userId: decoded.userId, role: decoded.role };
+    return next();   // ← يكمّل للـ controller
+  } catch {
+    return res.status(401).json({ error: 'Invalid or expired token' });
+  }
+}</code></pre>
+
+  <div class="card warn">
+    <div class="card-title">الفرق بين <span class="en">Authentication</span> و<span class="en">Authorization</span></div>
+    <p><strong><span class="en">Authentication</span></strong> = أنت مين؟ (verify identity)<br>
+    <strong><span class="en">Authorization</span></strong> = مسموحلك تعمل إيه؟ (verify permissions)<br>
+    في المشروع، <span class="en">requireAuth</span> بيعمل <span class="en">authN</span>، و<span class="en">requireRole('admin')</span> بيعمل <span class="en">authZ</span>.</p>
+  </div>
+
+  <h3>٢-٥. <span class="en">State Management</span></h3>
+  <p>السيرفر <span class="en">stateless</span> بالكامل — مفيش <span class="en">session</span> مخزّنة. كل <span class="en">request</span> بيحمل <span class="en">JWT</span> فيه الـ<span class="en">identity</span>. ده بيدّينا <span class="en">horizontal scalability</span> — أي عدد من الـ<span class="en">server instances</span> ممكن يخدموا أي <span class="en">request</span>.</p>
+  <p>في الـ<span class="en">frontend</span>، الـ<span class="en">state</span> بسيط:</p>
+  <ul>
+    <li><strong><span class="en">Persistent state</span></strong>: <code>localStorage.token</code></li>
+    <li><strong><span class="en">Page-level state</span></strong>: <span class="en">closure variable</span> داخل الـ<span class="en">IIFE</span> (زي <code>state.q</code>, <code>state.page</code> في <span class="en">transactions.html</span>)</li>
+    <li><strong><span class="en">Server-derived state</span></strong>: بنـ<span class="en">re-fetch</span> بعد كل عملية ناجحة عشان نضمن <span class="en">consistency</span></li>
+  </ul>
+
+  <h3>٢-٦. <span class="en">Asynchronous Programming</span></h3>
+  <p>كل <span class="en">I/O operation</span> (<span class="en">DB query, fetch, fs</span>) <span class="en">non-blocking</span>. بنستخدم <span class="en">async/await</span> فوق الـ<span class="en">Promises</span> عشان الكود يبقى <span class="en">linear</span> ومش <span class="en">callback hell</span>.</p>
+  <span class="code-caption"><span class="en">Sequential vs Parallel async operations</span></span>
+<pre><code>// ❌ Sequential — أبطأ، لأن كل وحدة بتستنى اللي قبلها
+const summary  = await apiFetch('/reports/summary');
+const txData   = await apiFetch('/finance/transactions');
+const budgets  = await apiFetch('/budgets');
+
+// ✅ Parallel — أسرع، لأنهم بيتنفّذوا في نفس الوقت
+const [summary, txData, budgets] = await Promise.all([
+  apiFetch('/reports/summary'),
+  apiFetch('/finance/transactions'),
+  apiFetch('/budgets'),
+]);</code></pre>
+</section>
+
+<!-- ============================================================
+     SECTION 3 — IMPLEMENTATION
+============================================================ -->
+<section id="impl">
+  <h2 class="section-title"><span class="num">3</span> الـ<span class="en">UI–Backend Integration</span> بالتفصيل</h2>
+  <p class="subtitle">إزاي <span class="en">click</span> على زرار في المتصفح بيتحوّل لـ <span class="en">DB write</span> وبيرجع <span class="en">UI update</span>؟ الـ<span class="en">flow</span> كامل.</p>
+
+  <h3>٣-١. الـ<span class="en">Request Lifecycle</span> — مثال عملي</h3>
+  <p>تخيّل المستخدم ضغط على "<strong>+ Add Transaction</strong>":</p>
+  <ol>
+    <li><strong><span class="en">DOM event</span>:</strong> الـ<span class="en">click event</span> بيـ<span class="en">trigger</span> الـ<span class="en">handler</span> اللي اتسجل بـ <code>addEventListener</code>.</li>
+    <li><strong><span class="en">Client-side validation</span>:</strong> بنتأكد إن الـ<span class="en">amount &gt; 0</span> والـ<span class="en">category</span> مختارة. لو فيه مشكلة، بنحطّ <code>has-error</code> class على الـ<span class="en">field</span> ونـ<span class="en">return</span>.</li>
+    <li><strong><span class="en">fetch() call</span>:</strong> <code>apiFetch</code> بيبعت <span class="en">POST request</span> فيها <span class="en">Authorization: Bearer ...</span> + <span class="en">JSON body</span>.</li>
+    <li><strong><span class="en">Express routing</span>:</strong> الـ<span class="en">router</span> بيلاقي <code>POST /transactions</code> ويبعتها للـ<span class="en">middleware chain</span>.</li>
+    <li><strong><span class="en">Middleware</span>:</strong> <code>requireAuth</code> بيـ<span class="en">verify</span> الـ<span class="en">JWT</span> ويحطّ <code>req.user</code>.</li>
+    <li><strong><span class="en">Controller</span>:</strong> <code>createTransaction</code> بيـ<span class="en">validate</span> الـ<span class="en">body</span>، يستدعي <code>finance.addTransaction</code>، ويرجّع <span class="en">JSON</span>.</li>
+    <li><strong><span class="en">Service / Repository</span>:</strong> <code>FinanceManager</code> بيـ<span class="en">notify</span> الـ<span class="en">observers</span> وبعدين <span class="en">TransactionRepo</span> بيـ<span class="en">create</span> الـ<span class="en">document</span> في <span class="en">MongoDB</span>.</li>
+    <li><strong><span class="en">Response</span>:</strong> السيرفر بيرجّع <code>201 Created</code> + <span class="en">normalized object</span> + <span class="en">new balance</span>.</li>
+    <li><strong><span class="en">UI update</span>:</strong> الـ<span class="en">handler</span> بيقفل الـ<span class="en">modal</span>، يـ<span class="en">show toast</span>، ويعمل <code>loadDashboard()</code> عشان يـ<span class="en">re-fetch</span> ويـ<span class="en">re-render</span>.</li>
+  </ol>
+
+  <h3>٣-٢. الـ<span class="en">DOM Rendering Strategy</span></h3>
+  <p>بدل ما نـ<span class="en">manipulate</span> كل <span class="en">node</span> لوحده، بنبني <span class="en">HTML string</span> كامل ونحطّه في <code>innerHTML</code>. ده <span class="en">simpler</span> لكن لازم نـ<span class="en">escape</span> أي <span class="en">user input</span> عشان نمنع <span class="en">XSS</span>.</p>
+  <span class="code-caption">XSS protection via escapeHtml</span>
+<pre><code>function escapeHtml(s) {
+  return String(s ?? '').replace(/[&amp;&lt;&gt;"']/g, c =&gt; ({
+    '&amp;': '&amp;amp;', '&lt;': '&amp;lt;', '&gt;': '&amp;gt;',
+    '"': '&amp;quot;', "'": '&amp;#39;',
+  }[c]));
+}
+
+// في رندر الجدول:
+tbody.innerHTML = items.map(tx =&gt; `
+  &lt;tr&gt;
+    &lt;td&gt;${escapeHtml(tx.description)}&lt;/td&gt;  &lt;!-- مهم! --&gt;
+    &lt;td&gt;${escapeHtml(tx.category)}&lt;/td&gt;
+  &lt;/tr&gt;`).join('');</code></pre>
+
+  <h3>٣-٣. <span class="en">Event Delegation</span></h3>
+  <p>بدل ما نسجّل <code>onclick</code> لكل صف في الجدول، بنسجّل <span class="en">single listener</span> على الـ<span class="en">tbody</span> ونستخدم <code>e.target.closest('.js-delete')</code>. ده بيوفّر <span class="en">memory</span> ويشتغل مع الـ<span class="en">elements</span> اللي بتتضاف <span class="en">dynamically</span> بعدين.</p>
+
+  <h3>٣-٤. <span class="en">Server-Side Search/Filter/Sort/Paginate</span></h3>
+  <p>الـ<span class="en">filter builder</span> هو <span class="en">single source of truth</span> — الـ<span class="en">list</span>، الـ<span class="en">count</span>، والـ<span class="en">CSV export</span> كلهم بيستخدموه:</p>
+<pre><code>buildFilter(q: TransactionQuery): FilterQuery {
+  const filter: any = { userId: new ObjectId(q.userId) };
+  if (q.type) filter.type = q.type;
+  if (q.category) filter.category = q.category;
+  if (q.from || q.to) {
+    filter.dateTime = {};
+    if (q.from) filter.dateTime.$gte = q.from;
+    if (q.to)   filter.dateTime.$lte = q.to;
+  }
+  if (q.q?.trim()) {
+    const escaped = q.q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&amp;');
+    filter.description = { $regex: escaped, $options: 'i' };
+  }
+  return filter;
+}</code></pre>
+</section>
+
+<!-- ============================================================
+     SECTION 4 — Q&A
+============================================================ -->
+<section id="qa">
+  <h2 class="section-title"><span class="num">4</span> جلسة <span class="en">Viva</span> — ٢٠ سؤال صعب</h2>
+  <p class="subtitle">دي الأسئلة اللي الـ<span class="en">TA</span> هيسألهالك في الـ<span class="en">discussion</span>. الإجابات <span class="en">concise</span> ومركّزة على الفهم العميق.</p>
+
+  <div class="qa">
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">1</span><span class="q-text"><span class="en">SQL Injection</span> ممكن تحصل في المشروع؟</span></div>
+      <div class="q-body">
+        <p>المشروع بيستخدم <span class="en">MongoDB</span> مش <span class="en">SQL</span>، فالـ<span class="en">classical SQL Injection</span> مش <span class="en">applicable</span>. بس فيه نظيرها — <strong><span class="en">NoSQL Injection</span></strong> — اللي بتحصل لو حد بعت <span class="en">JSON</span> فيه <span class="en">operator</span> زي <code>{"email": {"$gt": ""}}</code> بدل <span class="en">string</span>. الـ<span class="en">Mongoose schema</span> بيحمينا لأنه بيعمل <span class="en">type casting</span> — لو الـ<span class="en">schema</span> بيقول <code>email: String</code> والمستخدم بعت <span class="en">object</span>، <span class="en">Mongoose</span> هيرفضه. كمان <span class="en">ObjectId casting</span> في الـ<span class="en">middleware</span> بيمنع تمرير <span class="en">invalid IDs</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">2</span><span class="q-text">لو الـ<span class="en">project</span> كان <span class="en">SQL</span>، كنت هتحمي إزاي من <span class="en">SQL Injection</span>؟</span></div>
+      <div class="q-body">
+        <p>الإجابة الوحيدة الصحيحة: <strong><span class="en">parameterized queries / prepared statements</span></strong>. مينفعش أبداً نـ<span class="en">concatenate</span> الـ<span class="en">user input</span> في الـ<span class="en">SQL string</span>. مثال:</p>
+<pre><code>// ❌ خطر — vulnerable
+db.query(`SELECT * FROM users WHERE email = '${email}'`);
+
+// ✅ آمن — driver بيـ escape القيم
+db.query('SELECT * FROM users WHERE email = ?', [email]);</code></pre>
+        <p>كمان <span class="en">least-privilege DB user</span>, <span class="en">stored procedures</span>, و<span class="en">ORM-level type checking</span> بيضيفوا طبقات حماية.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">3</span><span class="q-text">ليه <span class="en">bcrypt</span> مش <span class="en">SHA-256</span> للـ <span class="en">password hashing</span>؟</span></div>
+      <div class="q-body">
+        <p><span class="en">SHA-256</span> سريع — وده <strong>عيبه</strong> هنا. الـ<span class="en">attacker</span> اللي يـ<span class="en">leak</span> الـ<span class="en">DB</span> يقدر يجرّب مليارات الـ<span class="en">candidates</span> في الثانية على <span class="en">GPU</span>. <span class="en">bcrypt</span> مصمّم يكون <span class="en">slow + adaptive</span> — عنده <span class="en">cost factor</span> (في كودنا <code>10</code>) يعني <span class="en">2^10 iterations</span>. كمان <span class="en">bcrypt</span> بيـ<span class="en">salt</span> automatically — كل <span class="en">password</span> ليه <span class="en">unique hash</span> حتى لو نفس الـ<span class="en">plaintext</span>، وده بيقتل الـ<span class="en">rainbow table attacks</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">4</span><span class="q-text">إيه اللي جوّه الـ<span class="en">JWT</span>، وممكن أعدّل عليه؟</span></div>
+      <div class="q-body">
+        <p>الـ<span class="en">JWT</span> = ثلاث أجزاء مفصولة بـ <code>.</code>:
+        <strong><span class="en">Header</span></strong> (algorithm) · <strong><span class="en">Payload</span></strong> (claims) · <strong><span class="en">Signature</span></strong> (HMAC). كله <span class="en">Base64URL-encoded</span> مش <span class="en">encrypted</span> — أي حد يقدر يقرا الـ<span class="en">payload</span>. لكن لو حد عدّل أي حرف، الـ<span class="en">signature</span> هتبقى <span class="en">invalid</span> لأن السيرفر هيـ<span class="en">recompute</span> الـ<span class="en">HMAC</span> بـ <code>JWT_SECRET</code> وهيلاقي اختلاف.</p>
+        <p><strong>القاعدة:</strong> ما تحطّش <span class="en">sensitive data</span> في الـ<span class="en">payload</span> — لأنها <span class="en">readable</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">5</span><span class="q-text">إيه ترتيب تنفيذ الـ<span class="en">middleware</span>؟ ولو حد نسى يكتب <code>next()</code> هيحصل إيه؟</span></div>
+      <div class="q-body">
+        <p>الـ<span class="en">middleware</span> بيتنفّذ بترتيب التسجيل في <code>app.use()</code> / <code>router.use()</code>. كل واحدة بتاخد <code>(req, res, next)</code>، ولازم تستدعي <code>next()</code> عشان الـ<span class="en">request</span> يكمّل. لو نسيت — الـ<span class="en">request</span> هيـ<span class="en">hang</span> لحد ما الـ<span class="en">client</span> يعمل <span class="en">timeout</span>، أو لو الـ<span class="en">response</span> اتبعتت داخل الـ<span class="en">middleware</span> (<code>res.status(401).json(...)</code>) فالـ<span class="en">request</span> هيخلص هناك من غير ما يكمّل.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">6</span><span class="q-text">إيه فايدة الـ<span class="en">compound index</span> <code>(userId, dateTime)</code> اللي عملناه؟</span></div>
+      <div class="q-body">
+        <p>أكتر <span class="en">query</span> بنعملها هي "هاتلي transactions الـ<span class="en">user</span> ده مرتّبين بالتاريخ". الـ<span class="en">compound index</span> بيسمح للـ<span class="en">DB engine</span> إنه يـ<span class="en">match</span> الـ<span class="en">user</span> ويـ<span class="en">scan</span> النتايج <span class="en">already-sorted</span> في الـ<span class="en">B-Tree</span> — من غير <span class="en">in-memory sort</span>. النتيجة: <span class="en">O(log n)</span> بدل <span class="en">O(n log n)</span>. الترتيب مهم — <code>{userId: 1, dateTime: -1}</code> مش زي <code>{dateTime: -1, userId: 1}</code> — الـ<span class="en">prefix rule</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">7</span><span class="q-text">اشرح <span class="en">CSS Specificity</span> ولو عندي <span class="en">inline style</span> + <span class="en">class rule</span> مين هيكسب؟</span></div>
+      <div class="q-body">
+        <p>الـ<span class="en">specificity</span> بتتحسب كـ <span class="en">4-tuple</span>: <code>(inline, id, class, tag)</code>. الترتيب من الأقوى للأضعف:</p>
+        <ol>
+          <li><code>!important</code> (يكسر كل القواعد)</li>
+          <li><span class="en">Inline style</span> = <code>(1,0,0,0)</code></li>
+          <li><span class="en">ID selector</span> = <code>(0,1,0,0)</code></li>
+          <li><span class="en">Class / attribute / pseudo-class</span> = <code>(0,0,1,0)</code></li>
+          <li><span class="en">Element / pseudo-element</span> = <code>(0,0,0,1)</code></li>
+        </ol>
+        <p>فلو فيه <code>style="color:red"</code> على عنصر و<code>.btn { color: blue }</code> في الـ<span class="en">stylesheet</span>، الـ<span class="en">inline</span> هتكسب. وعشان كده عملنا <span class="en">refactor</span> للأزرار في المشروع من <span class="en">inline</span> لـ <span class="en">classes</span> — عشان نقدر نـ<span class="en">override</span> بسهولة.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">8</span><span class="q-text">ليه الـ<span class="en">Singleton</span> في <span class="en">TypeScript</span> آمن أكتر من JS؟</span></div>
+      <div class="q-body">
+        <p>الـ<span class="en">private constructor</span> + الـ<span class="en">access modifier</span> بيتحقّقوا <span class="en">at compile-time</span>. في JS لو حد كتب <code>new TransactionRepo()</code> من بره، مفيش حاجة هتمنعه. في TS، الـ<span class="en">compiler</span> هيرمي <span class="en">error</span>. كمان <code>static instance</code> + الـ<span class="en">module caching</span> في <span class="en">Node</span> بيضمنوا إن الـ<span class="en">file</span> بيتـ<span class="en">load</span> مرة واحدة فقط.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">9</span><span class="q-text"><span class="en">Pagination</span> بـ <code>skip()</code> + <code>limit()</code> — متى تبقى مشكلة؟</span></div>
+      <div class="q-body">
+        <p>الـ<span class="en">skip(n)</span> بيمشي على <span class="en">n documents</span> أولاً قبل ما يبدأ يرجّع. لو الـ<span class="en">page</span> رقم 1000 على <span class="en">collection</span> فيها مليون <span class="en">document</span>، الـ<span class="en">DB</span> هتعدّي على 25,000 <span class="en">doc</span> من غير فايدة. الحل الـ<span class="en">production-grade</span> هو <strong><span class="en">cursor-based pagination</span></strong>: بدل <code>?page=N</code>، تستخدم <code>?after=&lt;last_id&gt;</code> وتعمل <code>find({ _id: { $gt: last_id } })</code> — ده <span class="en">O(log n)</span> بفضل الـ<span class="en">index</span>. مشروعنا بيستخدم <span class="en">offset pagination</span> لأن البيانات صغيرة وده الـ<span class="en">standard academic approach</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">10</span><span class="q-text">إزاي بنمنع <span class="en">XSS</span> في الـ<span class="en">dynamically-rendered tables</span>؟</span></div>
+      <div class="q-body">
+        <p>أي <span class="en">user-provided string</span> (description, category) بيتمر على <code>escapeHtml()</code> اللي بيحوّل <code>&lt;</code>, <code>&gt;</code>, <code>&quot;</code>, <code>'</code>, <code>&amp;</code> لـ <span class="en">HTML entities</span>. كده لو واحد كتب <code>&lt;script&gt;alert(1)&lt;/script&gt;</code> في الـ<span class="en">description</span>، هيتـ<span class="en">render</span> كـ <span class="en">text</span> مش كـ <span class="en">code</span>. كمان لازم نتجنّب <code>innerHTML</code> للـ<span class="en">data</span> اللي مش متأكدين منها — في الحالات الحرجة نستخدم <code>textContent</code>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">11</span><span class="q-text">ليه عملنا <span class="en">debounce</span> على الـ<span class="en">search input</span> ومش <span class="en">trigger</span> كل <span class="en">keystroke</span>؟</span></div>
+      <div class="q-body">
+        <p>بدون <span class="en">debounce</span>: كل حرف يدوس عليه المستخدم = <span class="en">HTTP request</span> = <span class="en">DB query</span>. لو كتب "transport" يبقى 9 <span class="en">requests</span> منهم 8 مش مهمين. بـ <span class="en">debounce(300ms)</span>: الـ<span class="en">handler</span> بيستنى لحد ما المستخدم يهدا 300ms من غير كتابة، وبعدها يبعت <span class="en">request</span> واحد. ده بيوفّر <span class="en">network</span>, <span class="en">DB load</span>, و<span class="en">render cycles</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">12</span><span class="q-text"><span class="en">Error handling</span> في الـ<span class="en">layered architecture</span> — مين بيـ<span class="en">catch</span> إيه؟</span></div>
+      <div class="q-body">
+        <p>عندنا تلات طبقات:</p>
+        <ol>
+          <li><strong><span class="en">Validation layer</span></strong>: في الـ<span class="en">controller</span> قبل ما نـ<span class="en">touch</span> الـ<span class="en">DB</span>. ترجّع <code>400 Bad Request</code>.</li>
+          <li><strong><span class="en">Domain layer</span></strong>: في الـ<span class="en">service</span> (مثلاً <code>assertValidAmount</code>) — بترمي <code>Error</code> object.</li>
+          <li><strong><span class="en">Persistence layer</span></strong>: <span class="en">Mongoose errors</span> (<code>ValidationError</code>, <code>duplicate key 11000</code>). بنـ<span class="en">catch</span> في الـ<span class="en">controller</span> ونـ<span class="en">map</span> لـ <code>409 Conflict</code> أو <code>400</code>.</li>
+        </ol>
+        <p>أخر طبقة هي <code>process.on('unhandledRejection', ...)</code> في <code>server.ts</code> — ده <span class="en">safety net</span> عشان أي <span class="en">async error</span> اتفلت ما يكرّش الـ<span class="en">process</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">13</span><span class="q-text">ليه <span class="en">async/await</span> أحسن من <span class="en">callbacks</span>؟</span></div>
+      <div class="q-body">
+        <p>تلات أسباب:</p>
+        <ul>
+          <li><strong><span class="en">Linear control flow</span></strong>: الكود يقرا من فوق لتحت زي الـ<span class="en">synchronous code</span>، مفيش <span class="en">callback pyramid</span>.</li>
+          <li><strong><span class="en">Error propagation</span></strong>: <code>try/catch</code> بيشتغل عادي. مع الـ<span class="en">callbacks</span> كنت تضطر تـ<span class="en">handle</span> الـ<span class="en">err</span> في كل <span class="en">callback</span>.</li>
+          <li><strong><span class="en">Composability</span></strong>: <code>Promise.all</code>, <code>Promise.race</code>, <code>Promise.allSettled</code> بتدّيك <span class="en">orchestration primitives</span> ما كنتش متاحة بسهولة في الـ<span class="en">callbacks</span>.</li>
+        </ul>
+        <p>تحت الكبوت: <code>async function</code> بترجع <span class="en">Promise</span>، و<code>await</code> بيـ<span class="en">pause</span> الـ<span class="en">execution</span> ويرجّع التحكم للـ<span class="en">event loop</span> لحد ما الـ<span class="en">Promise</span> يـ<span class="en">resolve</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">14</span><span class="q-text">ليه استخدمنا <span class="en">TypeScript</span> ومش <span class="en">JavaScript</span>؟</span></div>
+      <div class="q-body">
+        <p><span class="en">TypeScript</span> = <span class="en">JS</span> + <span class="en">static type system</span>. الفوايد:</p>
+        <ul>
+          <li><strong><span class="en">Compile-time errors</span></strong>: <span class="en">typos</span> و<span class="en">wrong types</span> بتتمسك قبل الـ<span class="en">runtime</span>.</li>
+          <li><strong><span class="en">Better tooling</span></strong>: <span class="en">autocomplete</span>, <span class="en">refactoring</span>, <span class="en">jump-to-definition</span>.</li>
+          <li><strong><span class="en">Self-documenting</span></strong>: الـ<span class="en">interface</span> ذاتها <span class="en">contract</span> بين الأكواد.</li>
+        </ul>
+        <p>التكلفة: <span class="en">build step</span> (<code>tsc</code> أو <code>ts-node</code>) + وقت تعلم. لكن في مشروع متوسط أو كبير، الـ<span class="en">savings</span> في الـ<span class="en">bugs</span> أكتر من التكلفة بكتير.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">15</span><span class="q-text">إزاي تخلّي الـ<span class="en">app</span> ده يستحمّل ١٠٠ ألف <span class="en">user</span>؟ (Performance / Scaling)</span></div>
+      <div class="q-body">
+        <p>الحلول مرتبة من الأرخص للأغلى:</p>
+        <ol>
+          <li><strong><span class="en">DB indexing</span></strong>: تأكد إن كل <span class="en">query path</span> مغطّى بـ <span class="en">index</span>.</li>
+          <li><strong><span class="en">Connection pooling</span></strong>: <span class="en">Mongoose</span> بيعمله <span class="en">by default</span> — تأكد من الحجم.</li>
+          <li><strong><span class="en">Caching layer</span></strong>: <span class="en">Redis</span> للـ<span class="en">read-heavy endpoints</span> زي <code>/reports/summary</code>.</li>
+          <li><strong><span class="en">Horizontal scaling</span></strong>: لأن السيرفر <span class="en">stateless</span>، تقدر تشغّل ٥ <span class="en">instances</span> ورا <span class="en">load balancer</span>.</li>
+          <li><strong><span class="en">Read replicas</span></strong> في <span class="en">MongoDB</span> + <span class="en">sharding</span> لو دي مش كفاية.</li>
+          <li><strong><span class="en">CDN</span></strong> للـ<span class="en">static assets</span> (HTML/CSS/JS).</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">16</span><span class="q-text">ليه ما خزّناش الـ<span class="en">JWT</span> في <span class="en">httpOnly cookie</span> بدل <span class="en">localStorage</span>؟</span></div>
+      <div class="q-body">
+        <p>الإجابة الـ<span class="en">academic</span>: <span class="en">localStorage</span> <strong>عرضة لـ <span class="en">XSS</span></strong> — أي <span class="en">injected script</span> يقدر يقراه. <span class="en">httpOnly cookie</span> الـ<span class="en">JS</span> ميقدرش يـ<span class="en">read</span>ه — أأمن. بس الـ<span class="en">cookie</span> بيـ<span class="en">expose</span> الـ<span class="en">app</span> لـ <span class="en">CSRF</span> — فلازم <span class="en">CSRF token</span> أو <code>SameSite=Strict</code>. في مشروع تعليمي مع <span class="en">strict XSS prevention</span> + <span class="en">CORS off</span>، الـ<span class="en">localStorage</span> مقبول. في <span class="en">production</span>، الـ<span class="en">cookie</span> أحسن.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">17</span><span class="q-text">إيه الفرق بين الـ<span class="en">Normalization</span> في <span class="en">SQL</span> والـ<span class="en">document modeling</span> في <span class="en">MongoDB</span>؟</span></div>
+      <div class="q-body">
+        <p>في <span class="en">SQL</span> بنطبّق <span class="en">1NF, 2NF, 3NF</span> لتقليل الـ<span class="en">redundancy</span> — كل <span class="en">entity</span> في <span class="en">table</span> لوحدها و<span class="en">JOIN</span> بيـ<span class="en">reconstruct</span> العلاقات. في <span class="en">MongoDB</span> القاعدة عكسية: <strong><span class="en">design for the query</span></strong>. لو الـ<span class="en">data</span> دايماً بتتقرا مع بعض، اعمل <span class="en">embedding</span>. لو منفصلة أو الـ<span class="en">child</span> بيكبر بلا حدود، اعمل <span class="en">referencing</span>. مشروعنا اختار <span class="en">referencing</span> للـ<span class="en">transactions</span> لأنها قابلة للنمو.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">18</span><span class="q-text">إزاي بنضمن إن <span class="en">user</span> A ميقدرش يـ<span class="en">delete</span> <span class="en">transaction</span> لـ <span class="en">user</span> B؟</span></div>
+      <div class="q-body">
+        <p>على مستويين:</p>
+        <ol>
+          <li><strong><span class="en">Middleware</span></strong>: <code>requireAuth</code> بيـ<span class="en">verify</span> الـ<span class="en">JWT</span> ويـ<span class="en">extract</span> <code>req.user.userId</code>.</li>
+          <li><strong><span class="en">Repository query</span></strong>: استخدمنا <code>findOneAndDelete({ _id, userId })</code> بدل <code>findByIdAndDelete(id)</code>. لو الـ<span class="en">id</span> موجود بس مش بتاع الـ<span class="en">user</span>، الـ<span class="en">query</span> هترجّع <code>null</code> والـ<span class="en">controller</span> هيرجّع <code>404</code>.</li>
+        </ol>
+        <p>ده النمط المعروف بـ <span class="en">ownership check at query level</span> — أأمن من <span class="en">fetch-then-check</span> لأنه بيمنع <span class="en">TOCTOU race conditions</span>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">19</span><span class="q-text">ليه عندنا <code>finally</code> في الـ<span class="en">try/catch</span> للأزرار؟</span></div>
+      <div class="q-body">
+        <p><code>finally</code> بيتنفّذ <strong>دايماً</strong> — سواء نجح الكود أو رمى <span class="en">error</span>. بنستخدمه عشان نـ<span class="en">restore</span> الـ<span class="en">button state</span> (<code>disabled = false</code>, <code>textContent = original</code>). من غيره، لو الـ<span class="en">request</span> فشل، الزر هيفضل <code>disabled</code> للأبد وهيـ<span class="en">block</span> المستخدم. ده مثال على <strong><span class="en">resource cleanup pattern</span></strong>.</p>
+      </div>
+    </div>
+
+    <div class="q-item">
+      <div class="q-head"><span class="q-num">20</span><span class="q-text">لو لقيت إن الـ<span class="en">UI</span> بطيء لما البيانات تكبر، إيه أول خطوة <span class="en">debugging</span>؟</span></div>
+      <div class="q-body">
+        <p>اتّبع التريتيب ده — مش <span class="en">guesswork</span>، <span class="en">methodical</span>:</p>
+        <ol>
+          <li><strong><span class="en">Profile, don't guess</span></strong>: افتح <span class="en">DevTools → Performance tab</span> واعمل <span class="en">recording</span>.</li>
+          <li><strong><span class="en">Network tab</span></strong>: شوف لو فيه <span class="en">request</span> بطيء — ده <span class="en">backend bottleneck</span>.</li>
+          <li>لو الـ<span class="en">backend</span> بطيء، شغّل <code>db.collection.explain('executionStats')</code> على الـ<span class="en">query</span> — لازم تشوف <code>IXSCAN</code> مش <code>COLLSCAN</code>.</li>
+          <li>لو الـ<span class="en">render</span> هو البطيء، استخدم <span class="en">virtual scrolling</span> أو <span class="en">pagination</span>.</li>
+          <li>لو الـ<span class="en">DOM</span> فيه آلاف الـ<span class="en">nodes</span>، استخدم <span class="en">DocumentFragment</span> أو <span class="en">requestAnimationFrame</span>.</li>
+        </ol>
+        <p>القاعدة الذهبية: <em>"<span class="en">Measure twice, cut once</span>"</em>.</p>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============================================================
+     SECTION 5 — GLOSSARY
+============================================================ -->
+<section id="glossary">
+  <h2 class="section-title"><span class="num">5</span> قاموس مصطلحات سريع</h2>
+  <p class="subtitle">المصطلحات اللي هتقابلك كتير في الـ<span class="en">discussion</span>.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>المصطلح</th><th>المعنى المختصر</th></tr></thead>
+      <tbody>
+        <tr><td><span class="en">ODM</span></td><td><span class="en">Object Document Mapper</span> — زي Mongoose. يقابله <span class="en">ORM</span> في عالم الـ SQL.</td></tr>
+        <tr><td><span class="en">Middleware</span></td><td>دالة بتشتغل بين الـ <span class="en">request</span> والـ <span class="en">response</span>.</td></tr>
+        <tr><td><span class="en">JWT</span></td><td><span class="en">JSON Web Token</span> — <span class="en">stateless authentication token</span>.</td></tr>
+        <tr><td><span class="en">CRUD</span></td><td><span class="en">Create / Read / Update / Delete</span>.</td></tr>
+        <tr><td><span class="en">Idempotent</span></td><td>تنفيذ العملية مرة أو ١٠٠ مرة بنفس النتيجة (PUT, DELETE).</td></tr>
+        <tr><td><span class="en">Stateless</span></td><td>السيرفر مش بيحتفظ بأي <span class="en">session state</span> بين الـ <span class="en">requests</span>.</td></tr>
+        <tr><td><span class="en">DOM</span></td><td><span class="en">Document Object Model</span> — تمثيل الـ HTML كـ <span class="en">tree</span> في الذاكرة.</td></tr>
+        <tr><td><span class="en">Schema</span></td><td>تعريف شكل الـ <span class="en">document/table</span> + الـ <span class="en">constraints</span>.</td></tr>
+        <tr><td><span class="en">Index</span></td><td>هيكل <span class="en">B-Tree/Hash</span> لتسريع الـ <span class="en">queries</span>.</td></tr>
+        <tr><td><span class="en">Cascade</span></td><td>تطبيق العملية على الـ <span class="en">related rows/documents</span>.</td></tr>
+        <tr><td><span class="en">Hoisting</span></td><td>تحريك تعريف الـ <span class="en">function/var</span> لأعلى الـ <span class="en">scope</span> at compile time.</td></tr>
+        <tr><td><span class="en">Event Loop</span></td><td>آلية الـ <span class="en">Node.js</span> لتنفيذ الكود الـ <span class="en">async</span> بشكل <span class="en">non-blocking</span>.</td></tr>
+        <tr><td><span class="en">XSS</span></td><td><span class="en">Cross-Site Scripting</span> — حقن <span class="en">JS</span> ضار في الصفحة.</td></tr>
+        <tr><td><span class="en">CSRF</span></td><td><span class="en">Cross-Site Request Forgery</span> — استغلال الـ <span class="en">session</span> النشطة.</td></tr>
+        <tr><td><span class="en">Race Condition</span></td><td>سلوك مختلف ومتقلب بسبب ترتيب تنفيذ الـ <span class="en">async operations</span>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card tip">
+    <div class="card-title">نصيحة أخيرة قبل الـ <span class="en">Discussion</span></div>
+    <p>لو الـ <span class="en">TA</span> سألك سؤال مفتوح زي "<em>إيه أفضل طريقة لـ X؟</em>" — رد بـ <strong><span class="en">trade-offs</span></strong> مش بإجابة واحدة. كل قرار في الـ <span class="en">engineering</span> فيه كسب وخسارة. اللي بيبيّن الفرق بين الطالب الـ <span class="en">good</span> والـ <span class="en">excellent</span> هو إنه يقدر يحكي على القرارات اللي اتاخدت في المشروع و<strong>ليه</strong> اتاخدت كده مش غيرها.</p>
+  </div>
+</section>
+
+</div><!-- /container -->
+
+<footer>
+  <p>دليل دراسي · <span class="en">BudgetWise</span> · معد لطلاب <span class="en">FCAI Year 2</span></p>
+  <p>اقرأ الكود الحقيقي — <span class="en">the source is the source of truth</span>. <span class="heart">♥</span></p>
+</footer>
+
+</body>
+</html>

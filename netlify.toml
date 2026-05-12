@@ -1,0 +1,27 @@
+# Netlify deployment config for BudgetWise.
+#
+# Netlify is static-only — it serves files from the publish directory but
+# does NOT execute Node.js. The Express backend under src/ will NOT run here.
+# See the deployment notes in the repo for how to host the backend separately.
+
+[build]
+  # Serve the static frontend from the public/ folder.
+  publish = "public"
+  # No build step needed — there is no bundler/transpiler for the frontend.
+  command = ""
+
+# Optional: gentle cache for static assets, no-cache for HTML so updates ship fast.
+[[headers]]
+  for = "/*.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
+
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600"
