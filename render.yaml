@@ -1,0 +1,42 @@
+# Render.com blueprint — one-click deploy of the BudgetWise backend.
+# Docs: https://render.com/docs/blueprint-spec
+#
+# Usage: in Render dashboard → New → Blueprint → connect this repo.
+# Render reads this file and provisions the service automatically.
+
+services:
+  - type: web
+    name: budgetwise-backend
+    env: node
+    plan: free
+    region: frankfurt           # closest free region to MENA users; change if needed
+    branch: main
+    autoDeploy: true            # redeploy on every push to main
+
+    # We need devDependencies (typescript) during build, even though Render
+    # defaults NODE_ENV=production which would otherwise skip them.
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+
+    healthCheckPath: /healthz
+
+    envVars:
+      - key: NODE_ENV
+        value: production
+
+      # Auto-generated 32-char random secret on first deploy.
+      - key: JWT_SECRET
+        generateValue: true
+
+      - key: JWT_EXPIRES_IN
+        value: 7d
+
+      # Origin allow-list — exactly the Netlify URL of the frontend.
+      # Add more comma-separated origins later if you attach a custom domain.
+      - key: ALLOWED_ORIGINS
+        value: https://budgetwise-fcai-karim.netlify.app
+
+      # MongoDB Atlas connection string. Render will prompt for this on first deploy
+      # because `sync: false` keeps it out of source control.
+      - key: MONGODB_URI
+        sync: false
