@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Profile – BudgetWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script defer src="js/common.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <h2>BudgetWise</h2>
+    <ul class="nav-links">
+      <li><a href="./dashboard.html">Dashboard</a></li>
+      <li><a href="./transactions.html">Transactions</a></li>
+      <li><a href="./budgets.html">Budgets &amp; Goals</a></li>
+      <li><a href="./reports.html">Reports</a></li>
+      <li><a href="./profile.html" class="active">Profile</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-danger-outline">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <div style="display:flex; align-items:center; gap:15px;">
+        <button class="menu-toggle" id="menuBtn" aria-label="Toggle Menu">☰</button>
+        <h1>Profile</h1>
+      </div>
+    </header>
+
+    <div class="grid-cards" style="grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));">
+      <!-- Account info card -->
+      <div class="card">
+        <h3 style="color:var(--text); font-size:1.1rem;">Account</h3>
+        <p class="text-muted" style="margin-bottom:1rem;">Update your display name.</p>
+        <form id="profileForm" novalidate>
+          <div class="field">
+            <label for="pEmail">Email</label>
+            <input id="pEmail" type="email" disabled />
+            <small class="text-muted">Email cannot be changed.</small>
+          </div>
+          <div class="field">
+            <label for="pFullName">Full Name</label>
+            <input id="pFullName" type="text" maxlength="100" required />
+            <div class="field-error">Name is required.</div>
+          </div>
+          <div class="field">
+            <label>Current Balance</label>
+            <div class="amount" id="pBalance" style="font-size:1.4rem;">EGP –</div>
+          </div>
+          <button class="btn-primary btn-block" id="saveProfileBtn" type="submit">Save changes</button>
+        </form>
+      </div>
+
+      <!-- Change password card -->
+      <div class="card">
+        <h3 style="color:var(--text); font-size:1.1rem;">Change password</h3>
+        <p class="text-muted" style="margin-bottom:1rem;">
+          New password must be 8+ characters and include an uppercase letter, a number, and a special character.
+        </p>
+        <form id="passwordForm" novalidate>
+          <div class="field">
+            <label for="pwCurrent">Current password</label>
+            <input id="pwCurrent" type="password" autocomplete="current-password" required />
+            <div class="field-error">Required.</div>
+          </div>
+          <div class="field">
+            <label for="pwNew">New password</label>
+            <input id="pwNew" type="password" autocomplete="new-password" required />
+            <div class="field-error">Doesn’t meet strength requirements.</div>
+          </div>
+          <div class="field">
+            <label for="pwConfirm">Confirm new password</label>
+            <input id="pwConfirm" type="password" autocomplete="new-password" required />
+            <div class="field-error">Doesn’t match.</div>
+          </div>
+          <button class="btn-primary btn-block" id="changePwBtn" type="submit">Update password</button>
+        </form>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.BW.bindCommonChrome()) return;
+  const { apiFetch, toast, money } = window.BW;
+  const el = (id) => document.getElementById(id);
+
+  // ── Load profile ────────────────────────────────────────────────
+  (async function () {
+    try {
+      const { user } = await apiFetch('/auth/me');
+      el('pEmail').value    = user.email;
+      el('pFullName').value = user.fullName;
+      el('pBalance').textContent = money(user.totalBalance ?? 0);
+    } catch (e) {
+      toast(e.message, 'error');
+    }
+  })();
+
+  // ── Update profile ──────────────────────────────────────────────
+  el('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    document.querySelectorAll('#profileForm .field').forEach((f) => f.classList.remove('has-error'));
+    const fullName = el('pFullName').value.trim();
+    if (!fullName) {
+      el('pFullName').closest('.field').classList.add('has-error');
+      return;
+    }
+    el('saveProfileBtn').disabled = true;
+    el('saveProfileBtn').textContent = 'Saving…';
+    try {
+      await apiFetch('/auth/me', { method: 'PATCH', body: JSON.stringify({ fullName }) });
+      toast('Profile updated', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      el('saveProfileBtn').disabled = false;
+      el('saveProfileBtn').textContent = 'Save changes';
+    }
+  });
+
+  // Strength check mirrors the server-side rule so we fail fast on the client.
+  function isStrongPassword(s) {
+    return s.length >= 8 && /[A-Z]/.test(s) && /\d/.test(s) && /[^A-Za-z0-9]/.test(s);
+  }
+
+  // ── Change password ─────────────────────────────────────────────
+  el('passwordForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    document.querySelectorAll('#passwordForm .field').forEach((f) => f.classList.remove('has-error'));
+    const current = el('pwCurrent').value;
+    const next    = el('pwNew').value;
+    const confirm = el('pwConfirm').value;
+
+    let firstError = null;
+    if (!current) { el('pwCurrent').closest('.field').classList.add('has-error'); firstError ||= 'current'; }
+    if (!isStrongPassword(next)) { el('pwNew').closest('.field').classList.add('has-error'); firstError ||= 'new'; }
+    if (next !== confirm) { el('pwConfirm').closest('.field').classList.add('has-error'); firstError ||= 'confirm'; }
+    if (firstError) return;
+
+    el('changePwBtn').disabled = true;
+    el('changePwBtn').textContent = 'Updating…';
+    try {
+      await apiFetch('/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword: current, newPassword: next }),
+      });
+      el('passwordForm').reset();
+      toast('Password updated', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      el('changePwBtn').disabled = false;
+      el('changePwBtn').textContent = 'Update password';
+    }
+  });
+});
+</script>
+</body>
+</html>

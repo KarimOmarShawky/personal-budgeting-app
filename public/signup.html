@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sign Up – BudgetWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1>Create your account</h1>
+      <p class="subtitle">Start tracking your money in seconds</p>
+
+      <form id="signupForm">
+        <div class="field">
+          <label for="fullName">Full Name</label>
+          <input id="fullName" type="text" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input id="password" type="password" autocomplete="new-password" required />
+          <small class="text-muted">8+ chars, an uppercase letter, a number, and a special character.</small>
+        </div>
+
+        <button class="btn-primary" type="submit">Sign Up</button>
+        <div id="error" class="text-danger text-center" style="display:none; margin-top:0.75rem;"></div>
+      </form>
+
+      <p class="footer-link">
+        Already have an account? <a href="./login.html">Log in</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const API_BASE = '/api/v1';
+
+      if (localStorage.getItem('token')) {
+        window.location.replace('./dashboard.html');
+        return;
+      }
+
+      const form = document.getElementById('signupForm');
+      const errorEl = document.getElementById('error');
+      const submitBtn = form.querySelector('button[type="submit"]');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        errorEl.style.display = 'none';
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account…';
+
+        const fullName = document.getElementById('fullName').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+
+        try {
+          const res = await fetch(`${API_BASE}/auth/signup`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fullName, email, password }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'Signup failed');
+          localStorage.setItem('token', data.token);
+          window.location.replace('./dashboard.html');
+        } catch (err) {
+          errorEl.textContent = err.message || 'Signup failed';
+          errorEl.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Sign Up';
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

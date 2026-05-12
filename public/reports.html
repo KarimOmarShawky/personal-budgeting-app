@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports – BudgetWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="js/common.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <h2>BudgetWise</h2>
+    <ul class="nav-links">
+      <li><a href="./dashboard.html">Dashboard</a></li>
+      <li><a href="./transactions.html">Transactions</a></li>
+      <li><a href="./budgets.html">Budgets &amp; Goals</a></li>
+      <li><a href="./reports.html" class="active">Reports</a></li>
+      <li><a href="./profile.html">Profile</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-danger-outline">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <div style="display:flex; align-items:center; gap:15px;">
+        <button class="menu-toggle" id="menuBtn" aria-label="Toggle Menu">☰</button>
+        <h1>Reports</h1>
+      </div>
+      <div class="header-actions" style="display:flex; gap:0.75rem;">
+        <button class="btn-secondary" id="downloadPdf">⬇ PDF</button>
+        <button class="btn-secondary" id="downloadCsv">⬇ CSV</button>
+        <button class="btn-secondary" id="copySummaryBtn">📋 Copy summary</button>
+      </div>
+    </header>
+
+    <!-- Controls -->
+    <div class="card filter-bar">
+      <label style="display:flex; align-items:center; gap:0.5rem;">
+        Month:
+        <input type="month" id="monthPicker" />
+      </label>
+      <label style="display:flex; align-items:center; gap:0.5rem;">
+        Type:
+        <select id="typeSelect">
+          <option value="expense">Expenses</option>
+          <option value="income">Income</option>
+        </select>
+      </label>
+      <button class="btn-primary" id="refreshBtn">Refresh</button>
+    </div>
+
+    <div class="grid-cards" style="margin-bottom:1.5rem;">
+      <div class="card">
+        <h3>Total Income</h3>
+        <div class="amount text-success" id="sumIncome">EGP –</div>
+      </div>
+      <div class="card">
+        <h3 class="text-danger">Total Expenses</h3>
+        <div class="amount" style="color:var(--danger);" id="sumExpenses">EGP –</div>
+      </div>
+      <div class="card">
+        <h3>Net Balance</h3>
+        <div class="amount" id="sumBalance">EGP –</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:1rem;" id="chartTitle">Expense Distribution</h3>
+      <div id="noData" style="display:none; text-align:center; padding:2rem; color:var(--text-muted);">
+        No data for this period.
+      </div>
+      <canvas id="expenseChart" style="max-height:400px;"></canvas>
+    </div>
+  </main>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.BW.bindCommonChrome()) return;
+  const { apiFetch, toast, money, getToken } = window.BW;
+
+  const el = (id) => document.getElementById(id);
+  const now = new Date();
+  el('monthPicker').value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  let chart = null;
+  let lastSummary = null;
+
+  async function loadReport() {
+    const [yearStr, monStr] = (el('monthPicker').value || `${now.getFullYear()}-${now.getMonth() + 1}`).split('-');
+    const year  = yearStr;
+    const month = parseInt(monStr, 10);
+    const type  = el('typeSelect').value;
+
+    try {
+      const summaryData = await apiFetch(`/reports/summary?year=${year}&month=${month}`);
+      lastSummary = summaryData.report;
+      const { income, expenses, balance } = lastSummary;
+      el('sumIncome').textContent   = money(income);
+      el('sumExpenses').textContent = money(expenses);
+      const balEl = el('sumBalance');
+      balEl.textContent = money(balance);
+      balEl.style.color = balance >= 0 ? 'var(--success)' : 'var(--danger)';
+
+      const chartData = await apiFetch(`/reports/chart-data?year=${year}&month=${month}&type=${type}`);
+      el('chartTitle').textContent =
+        `${type === 'expense' ? 'Expense' : 'Income'} Distribution – ${el('monthPicker').value}`;
+
+      const cd = chartData.chartData || { labels: [], datasets: [] };
+      const hasData = Array.isArray(cd.labels) && cd.labels.length > 0;
+      el('noData').style.display       = hasData ? 'none'  : 'block';
+      el('expenseChart').style.display = hasData ? 'block' : 'none';
+
+      if (chart) { chart.destroy(); chart = null; }
+      if (hasData) {
+        chart = new Chart(el('expenseChart').getContext('2d'), {
+          type: 'doughnut',
+          data: cd,
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { position: 'right' },
+              tooltip: {
+                callbacks: { label: (ctx) => ` ${ctx.label}: ${money(ctx.parsed)}` },
+              },
+            },
+          },
+        });
+      }
+    } catch (e) {
+      console.error('Report load error:', e);
+      toast(e.message, 'error');
+    }
+  }
+
+  el('refreshBtn').addEventListener('click', loadReport);
+  el('typeSelect').addEventListener('change', loadReport);
+  el('monthPicker').addEventListener('change', loadReport);
+
+  // ── Downloads (use fetch + Blob to attach the auth header) ─────
+  async function downloadReport(format, btn) {
+    if (!el('monthPicker').value) {
+      toast('Please pick a month first.', 'warning');
+      return;
+    }
+    const [yearStr, monStr] = el('monthPicker').value.split('-');
+    const type = el('typeSelect').value;
+    const path = `/reports/export/${format}?year=${yearStr}&month=${parseInt(monStr, 10)}&type=${type}`;
+
+    const original = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Downloading…';
+    try {
+      const res = await fetch(`${window.BW.API_BASE}${path}`, {
+        headers: { Authorization: `Bearer ${getToken()}` },
+      });
+      if (res.status === 401) {
+        localStorage.removeItem('token');
+        window.location.replace('./login.html');
+        return;
+      }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Download failed' }));
+        throw new Error(err.error || 'Download failed');
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement('a');
+      a.href = url;
+      a.download = `report-${el('monthPicker').value}.${format}`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast(`${format.toUpperCase()} downloaded`, 'success');
+    } catch (e) {
+      toast(e.message, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = original;
+    }
+  }
+
+  el('downloadPdf').addEventListener('click', (e) => downloadReport('pdf', e.currentTarget));
+  el('downloadCsv').addEventListener('click', (e) => downloadReport('csv', e.currentTarget));
+
+  // ── Copy summary to clipboard ──────────────────────────────────
+  el('copySummaryBtn').addEventListener('click', async () => {
+    if (!lastSummary) {
+      toast('Load a report first.', 'warning');
+      return;
+    }
+    const text = `BudgetWise — ${lastSummary.month}
+Income:   ${money(lastSummary.income)}
+Expenses: ${money(lastSummary.expenses)}
+Balance:  ${money(lastSummary.balance)}`;
+
+    try {
+      await navigator.clipboard.writeText(text);
+      toast('Summary copied to clipboard', 'success');
+    } catch {
+      // Fallback for older browsers / non-https contexts.
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand('copy');
+      ta.remove();
+      toast('Summary copied to clipboard', 'success');
+    }
+  });
+
+  loadReport();
+});
+</script>
+</body>
+</html>

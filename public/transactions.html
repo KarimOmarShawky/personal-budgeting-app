@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Transactions – BudgetWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script defer src="js/common.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <h2>BudgetWise</h2>
+    <ul class="nav-links">
+      <li><a href="./dashboard.html">Dashboard</a></li>
+      <li><a href="./transactions.html" class="active">Transactions</a></li>
+      <li><a href="./budgets.html">Budgets &amp; Goals</a></li>
+      <li><a href="./reports.html">Reports</a></li>
+      <li><a href="./profile.html">Profile</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-danger-outline">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <div style="display:flex; align-items:center; gap:15px;">
+        <button class="menu-toggle" id="menuBtn" aria-label="Toggle Menu">☰</button>
+        <h1>Transactions</h1>
+      </div>
+      <div class="header-actions" style="display:flex; gap:0.75rem;">
+        <button class="btn-secondary" id="exportCsvBtn">⬇ Export CSV</button>
+        <button class="btn-primary" id="addTxBtn">+ Add Transaction</button>
+      </div>
+    </header>
+
+    <!-- Filter bar -->
+    <div class="card filter-bar">
+      <input type="search" id="filterSearch" class="filter-search" placeholder="Search description…" autocomplete="off" />
+      <select id="filterType">
+        <option value="">All Types</option>
+        <option value="income">Income</option>
+        <option value="expense">Expense</option>
+      </select>
+      <select id="filterCategory">
+        <option value="">All Categories</option>
+        <option>Food</option><option>Transport</option><option>Education</option>
+        <option>Entertainment</option><option>Bills</option><option>Health</option>
+        <option>Shopping</option><option>Other</option>
+      </select>
+      <input type="date" id="filterFrom" title="From date" />
+      <input type="date" id="filterTo"   title="To date" />
+      <select id="filterSort" title="Sort by">
+        <option value="dateTime:desc">Newest first</option>
+        <option value="dateTime:asc">Oldest first</option>
+        <option value="amount:desc">Amount (high → low)</option>
+        <option value="amount:asc">Amount (low → high)</option>
+        <option value="category:asc">Category (A→Z)</option>
+      </select>
+      <button class="btn-secondary" id="clearFiltersBtn" type="button">Reset</button>
+      <span class="spacer"></span>
+      <span id="txCount" class="text-muted" style="font-size:0.875rem;"></span>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Amount</th>
+            <th style="text-align:center;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="txBody">
+          <tr><td colspan="6" class="muted-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    <div id="pagination" class="pagination"></div>
+  </main>
+</div>
+
+<!-- Add/Edit Transaction Modal -->
+<div id="txModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; width:90%; max-width:480px;">
+    <h3 id="txModalTitle" style="margin-bottom:1rem;">New Transaction</h3>
+    <div id="txError" style="display:none; color:var(--danger-color); margin-bottom:0.75rem;"></div>
+    <input type="hidden" id="mId" />
+    <div style="display:grid; gap:0.75rem;">
+      <div class="field">
+        <label for="mAmount">Amount (EGP)</label>
+        <input id="mAmount" type="number" step="0.01" min="0.01" placeholder="0.00" />
+        <div class="field-error">Enter a positive amount.</div>
+      </div>
+      <div class="field">
+        <label for="mDate">Date</label>
+        <input id="mDate" type="date" />
+      </div>
+      <div class="field">
+        <label for="mDesc">Description</label>
+        <input id="mDesc" type="text" placeholder="Optional" maxlength="200" />
+      </div>
+      <div class="field">
+        <label for="mCategory">Category</label>
+        <select id="mCategory">
+          <option value="">Select category</option>
+          <option>Food</option><option>Transport</option><option>Education</option>
+          <option>Entertainment</option><option>Bills</option><option>Health</option>
+          <option>Shopping</option><option>Other</option>
+        </select>
+        <div class="field-error">Choose a category.</div>
+      </div>
+      <div>
+        <div style="margin-bottom:0.5rem;">Type</div>
+        <label style="margin-right:1.5rem;"><input type="radio" name="mType" value="expense" checked /> Expense</label>
+        <label><input type="radio" name="mType" value="income" /> Income</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="submitTxBtn">Add</button>
+        <button class="btn-secondary" id="cancelTxBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; width:90%; max-width:380px; text-align:center;">
+    <h3 style="margin-bottom:0.75rem;">Delete Transaction?</h3>
+    <p style="color:var(--text-muted); margin-bottom:1.5rem;">This action cannot be undone.</p>
+    <div class="btn-row" style="justify-content:center;">
+      <button id="confirmDeleteBtn" class="btn-danger">Delete</button>
+      <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.BW.bindCommonChrome()) return;
+  const { apiFetch, toast, escapeHtml, money, debounce } = window.BW;
+
+  // ── Query state ─────────────────────────────────────────────────
+  const state = {
+    q: '', type: '', category: '', from: '', to: '',
+    sort: 'dateTime', order: 'desc',
+    page: 1, limit: 25,
+    total: 0, pages: 1,
+  };
+
+  const el = (id) => document.getElementById(id);
+
+  // ── Read filters from DOM, render the table ─────────────────────
+  async function loadTransactions() {
+    const params = new URLSearchParams();
+    if (state.q)        params.set('q', state.q);
+    if (state.type)     params.set('type', state.type);
+    if (state.category) params.set('category', state.category);
+    if (state.from)     params.set('from', state.from);
+    if (state.to)       params.set('to', state.to);
+    params.set('sort', state.sort);
+    params.set('order', state.order);
+    params.set('page', String(state.page));
+    params.set('limit', String(state.limit));
+
+    el('txBody').innerHTML = '<tr><td colspan="6" class="muted-row">Loading…</td></tr>';
+    try {
+      const data = await apiFetch(`/finance/transactions?${params.toString()}`);
+      state.total = data.pagination.total;
+      state.pages = data.pagination.pages;
+      renderTable(data.transactions);
+      renderPagination();
+    } catch (e) {
+      el('txBody').innerHTML =
+        `<tr><td colspan="6" class="muted-row" style="color:var(--danger);">${escapeHtml(e.message)}</td></tr>`;
+    }
+  }
+
+  function renderTable(items) {
+    el('txCount').textContent = `${state.total} transaction${state.total !== 1 ? 's' : ''}`;
+    const tbody = el('txBody');
+    if (items.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="muted-row">No transactions match these filters.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = items.map((tx) => {
+      const sign = tx.type === 'expense' ? '-' : '+';
+      const cls  = tx.type === 'expense' ? 'text-danger' : 'text-success';
+      const d    = new Date(tx.date).toLocaleDateString('en-EG', { day: '2-digit', month: 'short', year: 'numeric' });
+      const data = encodeURIComponent(JSON.stringify(tx));
+      return `<tr>
+        <td>${d}</td>
+        <td>${escapeHtml(tx.description || '—')}</td>
+        <td>${escapeHtml(tx.category)}</td>
+        <td style="text-transform:capitalize;">${tx.type}</td>
+        <td class="${cls}">${sign}${money(tx.amount)}</td>
+        <td style="text-align:center; white-space:nowrap;">
+          <button class="btn-secondary js-edit-tx" data-tx="${data}" style="padding:0.35rem 0.75rem; font-size:0.8rem;">Edit</button>
+          <button class="btn-danger-sm js-delete-tx" data-id="${tx.id}">Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderPagination() {
+    const c = el('pagination');
+    if (state.pages <= 1) { c.innerHTML = ''; return; }
+    const prevDisabled = state.page <= 1 ? 'disabled' : '';
+    const nextDisabled = state.page >= state.pages ? 'disabled' : '';
+    c.innerHTML = `
+      <button class="js-page" data-delta="-1" ${prevDisabled}>← Prev</button>
+      <span>Page <strong>${state.page}</strong> of ${state.pages}</span>
+      <button class="js-page" data-delta="1" ${nextDisabled}>Next →</button>
+    `;
+  }
+
+  // Debounced search keeps the UI responsive while the user types.
+  const debouncedLoad = debounce(() => { state.page = 1; loadTransactions(); }, 300);
+
+  el('filterSearch').addEventListener('input', (e) => {
+    state.q = e.target.value;
+    debouncedLoad();
+  });
+  el('filterType').addEventListener('change', (e) => {
+    state.type = e.target.value; state.page = 1; loadTransactions();
+  });
+  el('filterCategory').addEventListener('change', (e) => {
+    state.category = e.target.value; state.page = 1; loadTransactions();
+  });
+  el('filterFrom').addEventListener('change', (e) => {
+    state.from = e.target.value; state.page = 1; loadTransactions();
+  });
+  el('filterTo').addEventListener('change', (e) => {
+    state.to = e.target.value; state.page = 1; loadTransactions();
+  });
+  el('filterSort').addEventListener('change', (e) => {
+    const [sort, order] = e.target.value.split(':');
+    state.sort = sort; state.order = order; state.page = 1;
+    loadTransactions();
+  });
+  el('clearFiltersBtn').addEventListener('click', () => {
+    state.q = state.type = state.category = state.from = state.to = '';
+    state.sort = 'dateTime'; state.order = 'desc'; state.page = 1;
+    el('filterSearch').value = '';
+    el('filterType').value = '';
+    el('filterCategory').value = '';
+    el('filterFrom').value = '';
+    el('filterTo').value = '';
+    el('filterSort').value = 'dateTime:desc';
+    loadTransactions();
+  });
+
+  el('pagination').addEventListener('click', (e) => {
+    const b = e.target.closest('.js-page');
+    if (!b || b.disabled) return;
+    state.page = Math.max(1, Math.min(state.pages, state.page + Number(b.dataset.delta)));
+    loadTransactions();
+  });
+
+  // ── Add/Edit Modal ──────────────────────────────────────────────
+  const txModal = el('txModal');
+  const txError = el('txError');
+
+  function openTxModal(tx = null) {
+    txError.style.display = 'none';
+    document.querySelectorAll('#txModal .field').forEach((f) => f.classList.remove('has-error'));
+    el('mId').value = tx ? tx.id : '';
+    el('mAmount').value = tx ? tx.amount : '';
+    el('mDate').value = tx
+      ? new Date(tx.date).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0];
+    el('mDesc').value = tx ? (tx.description || '') : '';
+    el('mCategory').value = tx ? tx.category : '';
+    document.querySelector(`input[name="mType"][value="${tx ? tx.type : 'expense'}"]`).checked = true;
+    el('txModalTitle').textContent = tx ? 'Edit Transaction' : 'New Transaction';
+    el('submitTxBtn').textContent = tx ? 'Save changes' : 'Add';
+    txModal.style.display = 'flex';
+  }
+
+  el('addTxBtn').addEventListener('click', () => openTxModal(null));
+  el('cancelTxBtn').addEventListener('click', () => { txModal.style.display = 'none'; });
+  txModal.addEventListener('click', (e) => { if (e.target === txModal) txModal.style.display = 'none'; });
+
+  el('submitTxBtn').addEventListener('click', async () => {
+    txError.style.display = 'none';
+    document.querySelectorAll('#txModal .field').forEach((f) => f.classList.remove('has-error'));
+
+    const id       = el('mId').value;
+    const amount   = parseFloat(el('mAmount').value);
+    const date     = el('mDate').value;
+    const desc     = el('mDesc').value.trim();
+    const category = el('mCategory').value;
+    const type     = document.querySelector('input[name="mType"]:checked').value;
+
+    let firstError = null;
+    if (!amount || amount <= 0) { el('mAmount').closest('.field').classList.add('has-error'); firstError ||= 'amount'; }
+    if (!category)              { el('mCategory').closest('.field').classList.add('has-error'); firstError ||= 'category'; }
+    if (firstError) {
+      txError.textContent = 'Fix the highlighted fields.';
+      txError.style.display = 'block';
+      return;
+    }
+
+    el('submitTxBtn').disabled = true;
+    el('submitTxBtn').textContent = id ? 'Saving…' : 'Adding…';
+
+    try {
+      const body = { amount, date, description: desc, category, type };
+      if (id) {
+        await apiFetch(`/finance/transactions/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+        toast('Transaction updated', 'success');
+      } else {
+        await apiFetch('/finance/transactions', { method: 'POST', body: JSON.stringify(body) });
+        toast('Transaction added', 'success');
+      }
+      txModal.style.display = 'none';
+      loadTransactions();
+    } catch (e) {
+      txError.textContent = e.message;
+      txError.style.display = 'block';
+      toast(e.message, 'error');
+    } finally {
+      el('submitTxBtn').disabled = false;
+      el('submitTxBtn').textContent = id ? 'Save changes' : 'Add';
+    }
+  });
+
+  // ── Edit / Delete via event delegation ──────────────────────────
+  el('txBody').addEventListener('click', (e) => {
+    const editBtn = e.target.closest('.js-edit-tx');
+    if (editBtn) {
+      const tx = JSON.parse(decodeURIComponent(editBtn.dataset.tx));
+      openTxModal(tx);
+      return;
+    }
+    const delBtn = e.target.closest('.js-delete-tx');
+    if (delBtn) openDeleteModal(delBtn.dataset.id);
+  });
+
+  // ── Delete Modal ────────────────────────────────────────────────
+  const deleteModal = el('deleteModal');
+  let pendingDeleteId = null;
+
+  function openDeleteModal(id) {
+    pendingDeleteId = id;
+    deleteModal.style.display = 'flex';
+  }
+  el('cancelDeleteBtn').addEventListener('click', () => {
+    deleteModal.style.display = 'none'; pendingDeleteId = null;
+  });
+  deleteModal.addEventListener('click', (e) => {
+    if (e.target === deleteModal) { deleteModal.style.display = 'none'; pendingDeleteId = null; }
+  });
+  el('confirmDeleteBtn').addEventListener('click', async () => {
+    if (!pendingDeleteId) return;
+    el('confirmDeleteBtn').disabled = true;
+    try {
+      await apiFetch(`/finance/transactions/${pendingDeleteId}`, { method: 'DELETE' });
+      deleteModal.style.display = 'none';
+      pendingDeleteId = null;
+      toast('Transaction deleted', 'success');
+      loadTransactions();
+    } catch (e) {
+      toast(e.message, 'error');
+    } finally {
+      el('confirmDeleteBtn').disabled = false;
+    }
+  });
+
+  // ── CSV Export (re-uses current filter state) ──────────────────
+  el('exportCsvBtn').addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Exporting…';
+    try {
+      const params = new URLSearchParams();
+      if (state.q)        params.set('q', state.q);
+      if (state.type)     params.set('type', state.type);
+      if (state.category) params.set('category', state.category);
+      if (state.from)     params.set('from', state.from);
+      if (state.to)       params.set('to', state.to);
+      params.set('sort', state.sort);
+      params.set('order', state.order);
+
+      const res = await apiFetch(`/finance/transactions/export.csv?${params.toString()}`);
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast('CSV downloaded', 'success');
+    } catch (err) {
+      toast(err.message, 'error');
+    } finally {
+      btn.disabled = false; btn.textContent = orig;
+    }
+  });
+
+  loadTransactions();
+});
+</script>
+</body>
+</html>

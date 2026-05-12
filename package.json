@@ -1,0 +1,32 @@
+{
+  "name": "personal-budgeting-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.1",
+    "json2csv": "^6.0.0-alpha.2",
+    "jsonwebtoken": "^9.0.3",
+    "mongodb-memory-server": "^10.4.3",
+    "mongoose": "^9.6.1",
+    "pdfkit": "^0.18.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/express": "^5.0.6",
+    "@types/json2csv": "^5.0.7",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/mongoose": "^5.11.96",
+    "@types/node": "^25.6.0",
+    "@types/pdfkit": "^0.17.6",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}

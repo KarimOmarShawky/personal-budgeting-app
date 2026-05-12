@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard – BudgetWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script defer src="js/common.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <h2>BudgetWise</h2>
+    <ul class="nav-links">
+      <li><a href="./dashboard.html" class="active">Dashboard</a></li>
+      <li><a href="./transactions.html">Transactions</a></li>
+      <li><a href="./budgets.html">Budgets &amp; Goals</a></li>
+      <li><a href="./reports.html">Reports</a></li>
+      <li><a href="./profile.html">Profile</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-danger-outline">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <div style="display:flex; align-items:center; gap:15px;">
+        <button class="menu-toggle" id="menuBtn" aria-label="Toggle Menu">☰</button>
+        <h1>Dashboard</h1>
+      </div>
+      <div class="header-actions">
+        <button class="btn-primary" id="newTxBtn">+ Add Transaction</button>
+      </div>
+    </header>
+
+    <!-- Slot for budget alerts. Filled dynamically when alerts exist. -->
+    <div id="alertsSlot"></div>
+
+    <div class="grid-cards">
+      <div class="card">
+        <h3>Total Balance</h3>
+        <div class="amount" id="balance">EGP –</div>
+      </div>
+      <div class="card">
+        <h3>Monthly Income</h3>
+        <div class="amount text-success" id="income">+EGP –</div>
+      </div>
+      <div class="card">
+        <h3 class="text-danger">Monthly Expenses</h3>
+        <div class="amount" style="color:var(--danger); font-weight:bold;" id="expenses">-EGP –</div>
+      </div>
+    </div>
+
+    <h2 style="margin-bottom:1rem; font-size:1.25rem;">Recent Transactions</h2>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>Date</th><th>Description</th><th>Category</th><th>Amount</th></tr>
+        </thead>
+        <tbody id="txBody">
+          <tr><td colspan="4" class="muted-row">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+</div>
+
+<!-- Add Transaction Modal -->
+<div id="txModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; width:90%; max-width:480px;">
+    <h3 style="margin-bottom:1rem;">New Transaction</h3>
+    <div id="txError" style="display:none; color:var(--danger); margin-bottom:0.75rem;"></div>
+    <div style="display:grid; gap:0.75rem;">
+      <div class="field">
+        <label for="mAmount">Amount (EGP)</label>
+        <input id="mAmount" type="number" step="0.01" min="0.01" placeholder="0.00" />
+        <div class="field-error">Enter a positive amount.</div>
+      </div>
+      <div class="field">
+        <label for="mDate">Date</label>
+        <input id="mDate" type="date" />
+      </div>
+      <div class="field">
+        <label for="mDesc">Description</label>
+        <input id="mDesc" type="text" placeholder="Optional" maxlength="200" />
+      </div>
+      <div class="field">
+        <label for="mCategory">Category</label>
+        <select id="mCategory">
+          <option value="">Select category</option>
+          <option>Food</option><option>Transport</option><option>Education</option>
+          <option>Entertainment</option><option>Bills</option><option>Health</option>
+          <option>Shopping</option><option>Other</option>
+        </select>
+        <div class="field-error">Choose a category.</div>
+      </div>
+      <div>
+        <div style="margin-bottom:0.5rem;">Type</div>
+        <label style="margin-right:1.5rem;"><input type="radio" name="mType" value="expense" checked /> Expense</label>
+        <label><input type="radio" name="mType" value="income" /> Income</label>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="submitTxBtn">Add</button>
+        <button class="btn-secondary" id="cancelTxBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.BW.bindCommonChrome()) return;
+  const { apiFetch, toast, escapeHtml, money } = window.BW;
+
+  const el = (id) => document.getElementById(id);
+  const now = new Date();
+  const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  // ── Load dashboard (summary, recent tx, budget alerts) ──────────
+  async function loadDashboard() {
+    try {
+      const [summary, txData, budgetData] = await Promise.all([
+        apiFetch(`/reports/summary?year=${now.getFullYear()}&month=${now.getMonth() + 1}`),
+        apiFetch('/finance/transactions?limit=8&sort=dateTime&order=desc'),
+        apiFetch(`/budgets?month=${currentMonth}`),
+      ]);
+
+      const { income, expenses, balance } = summary.report;
+      el('balance').textContent  = money(balance);
+      el('income').textContent   = `+${money(income)}`;
+      el('expenses').textContent = `-${money(expenses)}`;
+
+      renderRecent(txData.transactions);
+      renderAlerts(budgetData.budgets || []);
+    } catch (e) {
+      console.error('Dashboard load error:', e);
+      toast(e.message, 'error');
+    }
+  }
+
+  function renderRecent(recent) {
+    const tbody = el('txBody');
+    if (!recent || recent.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" class="muted-row">No transactions yet</td></tr>';
+      return;
+    }
+    tbody.innerHTML = recent.map((tx) => {
+      const sign = tx.type === 'expense' ? '-' : '+';
+      const cls  = tx.type === 'expense' ? 'text-danger' : 'text-success';
+      const d    = new Date(tx.date).toLocaleDateString('en-EG', { day: '2-digit', month: 'short', year: 'numeric' });
+      return `<tr>
+        <td>${d}</td>
+        <td>${escapeHtml(tx.description || '—')}</td>
+        <td>${escapeHtml(tx.category)}</td>
+        <td class="${cls}">${sign}${money(tx.amount)}</td>
+      </tr>`;
+    }).join('');
+  }
+
+  function renderAlerts(budgets) {
+    const slot = el('alertsSlot');
+    const exceeded  = budgets.filter((b) => b.status === 'Exceeded');
+    const nearLimit = budgets.filter((b) => b.status === 'Near Limit');
+
+    if (exceeded.length === 0 && nearLimit.length === 0) {
+      slot.innerHTML = '';
+      return;
+    }
+    const hasExceeded = exceeded.length > 0;
+    const list = [...exceeded, ...nearLimit]
+      .map((b) => `<li><strong>${escapeHtml(b.category)}</strong> — ${money(b.spent)} / ${money(b.limitAmount)} (${b.pct}%) <em>${b.status}</em></li>`)
+      .join('');
+
+    slot.innerHTML = `
+      <div class="alert-banner ${hasExceeded ? 'alert-danger' : ''}" role="alert">
+        <div style="font-size:1.4rem; line-height:1;">${hasExceeded ? '🚨' : '⚠️'}</div>
+        <div style="flex:1;">
+          <strong>${hasExceeded ? 'Budget alert — limit exceeded.' : 'Heads up — you’re close to your limit.'}</strong>
+          <ul>${list}</ul>
+        </div>
+      </div>`;
+  }
+
+  // ── Modal: Add Transaction ──────────────────────────────────────
+  const modal   = el('txModal');
+  const txError = el('txError');
+
+  function openModal() {
+    txError.style.display = 'none';
+    document.querySelectorAll('#txModal .field').forEach((f) => f.classList.remove('has-error'));
+    el('mDate').value     = new Date().toISOString().split('T')[0];
+    el('mAmount').value   = '';
+    el('mDesc').value     = '';
+    el('mCategory').value = '';
+    document.querySelector('input[name="mType"][value="expense"]').checked = true;
+    modal.style.display = 'flex';
+  }
+
+  el('newTxBtn').addEventListener('click', openModal);
+  el('cancelTxBtn').addEventListener('click', () => { modal.style.display = 'none'; });
+  modal.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
+
+  el('submitTxBtn').addEventListener('click', async () => {
+    txError.style.display = 'none';
+    document.querySelectorAll('#txModal .field').forEach((f) => f.classList.remove('has-error'));
+
+    const amount   = parseFloat(el('mAmount').value);
+    const date     = el('mDate').value;
+    const desc     = el('mDesc').value.trim();
+    const category = el('mCategory').value;
+    const type     = document.querySelector('input[name="mType"]:checked').value;
+
+    let firstError = null;
+    if (!amount || amount <= 0) { el('mAmount').closest('.field').classList.add('has-error'); firstError ||= 'amount'; }
+    if (!category)              { el('mCategory').closest('.field').classList.add('has-error'); firstError ||= 'category'; }
+    if (firstError) {
+      txError.textContent = 'Fix the highlighted fields.';
+      txError.style.display = 'block';
+      return;
+    }
+
+    el('submitTxBtn').disabled = true;
+    el('submitTxBtn').textContent = 'Adding…';
+    try {
+      await apiFetch('/finance/transactions', {
+        method: 'POST',
+        body: JSON.stringify({ amount, date, description: desc, category, type }),
+      });
+      modal.style.display = 'none';
+      toast('Transaction added', 'success');
+      loadDashboard();
+    } catch (e) {
+      txError.textContent = e.message;
+      txError.style.display = 'block';
+      toast(e.message, 'error');
+    } finally {
+      el('submitTxBtn').disabled = false;
+      el('submitTxBtn').textContent = 'Add';
+    }
+  });
+
+  loadDashboard();
+});
+</script>
+</body>
+</html>

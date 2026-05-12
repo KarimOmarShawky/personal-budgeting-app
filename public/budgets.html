@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Budgets – BudgetWise</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script defer src="js/common.js"></script>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <h2>BudgetWise</h2>
+    <ul class="nav-links">
+      <li><a href="./dashboard.html">Dashboard</a></li>
+      <li><a href="./transactions.html">Transactions</a></li>
+      <li><a href="./budgets.html" class="active">Budgets &amp; Goals</a></li>
+      <li><a href="./reports.html">Reports</a></li>
+      <li><a href="./profile.html">Profile</a></li>
+    </ul>
+    <div class="sidebar-footer">
+      <button id="logoutBtn" class="btn-danger-outline">⏻ Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header>
+      <div style="display:flex; align-items:center; gap:15px;">
+        <button class="menu-toggle" id="menuBtn" aria-label="Toggle Menu">☰</button>
+        <h1>Monthly Budgets</h1>
+      </div>
+      <div class="header-actions" style="display:flex; gap:0.75rem; align-items:center;">
+        <input type="month" id="monthPicker" style="padding:0.5rem 0.75rem; border-radius:8px; border:1px solid var(--border);" />
+        <button class="btn-primary" id="newBudgetBtn">+ New Budget</button>
+      </div>
+    </header>
+
+    <div id="budgetList" class="grid-cards">
+      <p class="text-muted">Loading…</p>
+    </div>
+  </main>
+</div>
+
+<!-- Add/Edit Budget Modal -->
+<div id="budgetModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; width:90%; max-width:440px;">
+    <h3 id="budgetModalTitle" style="margin-bottom:1rem;">New Budget</h3>
+    <div id="budgetError" style="display:none; color:var(--danger); margin-bottom:0.75rem;"></div>
+    <input type="hidden" id="bId" />
+    <div style="display:grid; gap:0.75rem;">
+      <div class="field">
+        <label for="bCategory">Category</label>
+        <select id="bCategory">
+          <option value="">Select category</option>
+          <option>Food</option><option>Transport</option><option>Education</option>
+          <option>Entertainment</option><option>Bills</option><option>Health</option>
+          <option>Shopping</option><option>Other</option>
+        </select>
+        <div class="field-error">Choose a category.</div>
+      </div>
+      <div class="field">
+        <label for="bMonth">Month</label>
+        <input id="bMonth" type="month" />
+        <div class="field-error">Pick a month.</div>
+      </div>
+      <div class="field">
+        <label for="bLimit">Spending Limit (EGP)</label>
+        <input id="bLimit" type="number" step="0.01" min="1" placeholder="e.g. 1000" />
+        <div class="field-error">Enter a positive limit.</div>
+      </div>
+      <div class="field">
+        <label for="bThreshold">Alert at (% of limit)</label>
+        <input id="bThreshold" type="number" min="1" max="100" value="80" />
+        <div class="field-error">Threshold must be 1–100.</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="submitBudgetBtn">Save Budget</button>
+        <button class="btn-secondary" id="cancelBudgetBtn">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm Delete Modal -->
+<div id="deleteModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+  <div style="background:white; padding:2rem; border-radius:12px; width:90%; max-width:360px; text-align:center;">
+    <h3 style="margin-bottom:0.75rem;">Delete Budget?</h3>
+    <p class="text-muted" style="margin-bottom:1.5rem;">This will remove the budget limit for this category.</p>
+    <div class="btn-row" style="justify-content:center;">
+      <button id="confirmDeleteBtn" class="btn-danger">Delete</button>
+      <button id="cancelDeleteBtn" class="btn-secondary">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  if (!window.BW.bindCommonChrome()) return;
+  const { apiFetch, toast, escapeHtml, money } = window.BW;
+
+  const el = (id) => document.getElementById(id);
+  const now = new Date();
+  const defaultMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+
+  const monthPicker = el('monthPicker');
+  monthPicker.value = defaultMonth;
+  monthPicker.addEventListener('change', loadBudgets);
+
+  // Cache the most recently fetched budgets so we can populate the edit modal
+  // without re-querying the server.
+  let currentBudgets = [];
+
+  async function loadBudgets() {
+    const month = monthPicker.value || defaultMonth;
+    const list  = el('budgetList');
+    list.innerHTML = '<p class="text-muted">Loading…</p>';
+    try {
+      const data = await apiFetch(`/budgets?month=${month}`);
+      currentBudgets = data.budgets || [];
+      renderBudgets(currentBudgets);
+    } catch (e) {
+      list.innerHTML = `<p style="color:var(--danger);">${escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  function renderBudgets(budgets) {
+    const list = el('budgetList');
+    if (budgets.length === 0) {
+      list.innerHTML = `
+        <div style="grid-column:1/-1; text-align:center; padding:3rem; color:var(--text-muted);">
+          <p style="font-size:1.1rem; margin-bottom:0.5rem;">No budgets yet for this month.</p>
+          <p>Click <strong>+ New Budget</strong> to set spending limits.</p>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = budgets.map((b) => {
+      const barColor = b.status === 'Exceeded'   ? 'var(--danger)'
+                     : b.status === 'Near Limit' ? 'var(--warning)'
+                     :                             'var(--primary)';
+      const statusColor = b.status === 'Exceeded'   ? 'text-danger'
+                        : b.status === 'Near Limit' ? ''
+                        :                             'text-success';
+      return `
+        <div class="card clickable js-edit-budget" data-id="${b.id}" title="Click to edit">
+          <button class="btn-icon js-delete-budget" data-id="${b.id}" title="Delete budget"
+            style="position:absolute; top:0.5rem; right:0.5rem;">✕</button>
+          <div style="display:flex; justify-content:space-between; margin-bottom:0.5rem; padding-right:1.5rem;">
+            <h3 style="margin:0; color:var(--text); font-weight:600;">${escapeHtml(b.category)}</h3>
+            <span class="${statusColor}" style="${!statusColor ? 'color:var(--warning)' : ''}">
+              ${money(b.spent)} / ${money(b.limitAmount)}
+            </span>
+          </div>
+          <p style="font-size:0.875rem; color:var(--text-muted); margin-bottom:0.75rem;">
+            ${b.status} &nbsp;·&nbsp; ${b.pct}% used &nbsp;·&nbsp; alert at ${b.alertThreshold}%
+          </p>
+          <div class="progress-wrapper">
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${b.pct}%; background-color:${barColor};"></div>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  }
+
+  // Position absolute requires the card to be position:relative.
+  // Add a tiny style override here so we don't touch the base CSS.
+  const cardStyle = document.createElement('style');
+  cardStyle.textContent = '#budgetList .card { position: relative; }';
+  document.head.appendChild(cardStyle);
+
+  // Event delegation handles both edit (card body) and delete (X icon).
+  el('budgetList').addEventListener('click', (e) => {
+    const delBtn = e.target.closest('.js-delete-budget');
+    if (delBtn) {
+      e.stopPropagation();
+      openDeleteModal(delBtn.dataset.id);
+      return;
+    }
+    const editCard = e.target.closest('.js-edit-budget');
+    if (editCard) {
+      const b = currentBudgets.find((x) => x.id === editCard.dataset.id);
+      if (b) openBudgetModal(b);
+    }
+  });
+
+  // ── Add/Edit Modal ──────────────────────────────────────────────
+  const budgetModal = el('budgetModal');
+  const budgetError = el('budgetError');
+
+  function openBudgetModal(b = null) {
+    budgetError.style.display = 'none';
+    document.querySelectorAll('#budgetModal .field').forEach((f) => f.classList.remove('has-error'));
+    el('bId').value        = b ? b.id : '';
+    el('bCategory').value  = b ? b.category : '';
+    el('bMonth').value     = b ? b.month : (monthPicker.value || defaultMonth);
+    el('bLimit').value     = b ? b.limitAmount : '';
+    el('bThreshold').value = b ? b.alertThreshold : 80;
+    el('bCategory').disabled = !!b;  // category+month are the unique key — don't allow rename
+    el('bMonth').disabled = !!b;
+    el('budgetModalTitle').textContent = b ? 'Edit Budget' : 'New Budget';
+    el('submitBudgetBtn').textContent  = b ? 'Save changes' : 'Save Budget';
+    budgetModal.style.display = 'flex';
+  }
+
+  el('newBudgetBtn').addEventListener('click', () => openBudgetModal(null));
+  el('cancelBudgetBtn').addEventListener('click', () => { budgetModal.style.display = 'none'; });
+  budgetModal.addEventListener('click', (e) => { if (e.target === budgetModal) budgetModal.style.display = 'none'; });
+
+  el('submitBudgetBtn').addEventListener('click', async () => {
+    budgetError.style.display = 'none';
+    document.querySelectorAll('#budgetModal .field').forEach((f) => f.classList.remove('has-error'));
+
+    const isEdit = !!el('bId').value;
+    const category       = el('bCategory').value;
+    const month          = el('bMonth').value;
+    const limitAmount    = parseFloat(el('bLimit').value);
+    const alertThreshold = parseInt(el('bThreshold').value, 10);
+
+    let firstError = null;
+    if (!category)                                  { el('bCategory').closest('.field').classList.add('has-error'); firstError ||= 'category'; }
+    if (!month)                                     { el('bMonth').closest('.field').classList.add('has-error'); firstError ||= 'month'; }
+    if (!limitAmount || limitAmount <= 0)           { el('bLimit').closest('.field').classList.add('has-error'); firstError ||= 'limit'; }
+    if (!alertThreshold || alertThreshold < 1 || alertThreshold > 100) { el('bThreshold').closest('.field').classList.add('has-error'); firstError ||= 'threshold'; }
+    if (firstError) {
+      budgetError.textContent = 'Fix the highlighted fields.';
+      budgetError.style.display = 'block';
+      return;
+    }
+
+    el('submitBudgetBtn').disabled = true;
+    el('submitBudgetBtn').textContent = 'Saving…';
+    try {
+      // The POST endpoint is an upsert by (userId,category,month), so both
+      // "create" and "edit" use the same call.
+      await apiFetch('/budgets', {
+        method: 'POST',
+        body: JSON.stringify({ category, month, limitAmount, alertThreshold }),
+      });
+      budgetModal.style.display = 'none';
+      monthPicker.value = month;
+      toast(isEdit ? 'Budget updated' : 'Budget created', 'success');
+      loadBudgets();
+    } catch (e) {
+      budgetError.textContent = e.message;
+      budgetError.style.display = 'block';
+      toast(e.message, 'error');
+    } finally {
+      el('submitBudgetBtn').disabled = false;
+      el('submitBudgetBtn').textContent = isEdit ? 'Save changes' : 'Save Budget';
+    }
+  });
+
+  // ── Delete Modal ────────────────────────────────────────────────
+  const deleteModal = el('deleteModal');
+  let pendingDeleteId = null;
+
+  function openDeleteModal(id) {
+    pendingDeleteId = id;
+    deleteModal.style.display = 'flex';
+  }
+  el('cancelDeleteBtn').addEventListener('click', () => {
+    deleteModal.style.display = 'none'; pendingDeleteId = null;
+  });
+  deleteModal.addEventListener('click', (e) => {
+    if (e.target === deleteModal) { deleteModal.style.display = 'none'; pendingDeleteId = null; }
+  });
+  el('confirmDeleteBtn').addEventListener('click', async () => {
+    if (!pendingDeleteId) return;
+    el('confirmDeleteBtn').disabled = true;
+    try {
+      await apiFetch(`/budgets/${pendingDeleteId}`, { method: 'DELETE' });
+      deleteModal.style.display = 'none';
+      pendingDeleteId = null;
+      toast('Budget deleted', 'success');
+      loadBudgets();
+    } catch (e) {
+      toast(e.message, 'error');
+    } finally {
+      el('confirmDeleteBtn').disabled = false;
+    }
+  });
+
+  loadBudgets();
+});
+</script>
+</body>
+</html>
