@@ -34,7 +34,11 @@
 
   <script>
     (function () {
-      const API_BASE = '/api/v1';
+      // Local dev: same-origin. Production (Netlify): point at Render backend.
+      const RENDER_BACKEND_URL = 'https://budgetwise-backend.onrender.com';
+      const _host = window.location.hostname;
+      const _isLocal = _host === 'localhost' || _host === '127.0.0.1';
+      const API_BASE = _isLocal ? '/api/v1' : `${RENDER_BACKEND_URL}/api/v1`;
 
       if (localStorage.getItem('token')) {
         window.location.replace('./dashboard.html');
