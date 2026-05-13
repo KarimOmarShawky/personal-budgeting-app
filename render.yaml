@@ -31,10 +31,11 @@ services:
       - key: JWT_EXPIRES_IN
         value: 7d
 
-      # Origin allow-list — exactly the Netlify URL of the frontend.
-      # Add more comma-separated origins later if you attach a custom domain.
+      # Origin allow-list — comma-separated. Entries with "*" are treated as
+      # wildcard patterns so Netlify deploy previews (deploy-preview-N--site,
+      # branch--site, agent-XXX--site) are also accepted.
       - key: ALLOWED_ORIGINS
-        value: https://budgetwise-fcai-karim.netlify.app
+        value: https://budgetwise-fcai-karim.netlify.app,https://*--budgetwise-fcai-karim.netlify.app
 
       # MongoDB Atlas connection string. Render will prompt for this on first deploy
       # because `sync: false` keeps it out of source control.

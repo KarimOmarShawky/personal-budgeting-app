@@ -15,7 +15,14 @@
 (function () {
   'use strict';
 
-  const API_BASE = '/api/v1';
+  // When running locally (npm start), the backend is on the same origin, so a
+  // relative path works. When the frontend is deployed to Netlify, the backend
+  // lives on Render — point at it explicitly. Replace the URL below with your
+  // own Render service URL (Render dashboard → your service → top of page).
+  const RENDER_BACKEND_URL = 'https://budgetwise-backend.onrender.com';
+  const host = window.location.hostname;
+  const isLocal = host === 'localhost' || host === '127.0.0.1';
+  const API_BASE = isLocal ? '/api/v1' : `${RENDER_BACKEND_URL}/api/v1`;
 
   function getToken() {
     return localStorage.getItem('token');

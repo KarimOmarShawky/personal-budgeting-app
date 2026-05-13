@@ -17,6 +17,18 @@ const PORT = CONFIG.PORT;
 // ── CORS ───────────────────────────────────────────────────────────────
 // In dev: reflect any origin so localhost:3000 / 5500 etc. just work.
 // In prod: only allow origins listed in ALLOWED_ORIGINS (or any if empty).
+// Entries containing "*" are treated as wildcard patterns. Netlify deploy
+// previews look like https://deploy-preview-12--site.netlify.app or
+// https://abc123--site.netlify.app, so a pattern like
+// "https://*--budgetwise-fcai-karim.netlify.app" matches all of them.
+function originMatches(origin: string, pattern: string): boolean {
+  if (!pattern.includes('*')) return origin === pattern;
+  const regex = new RegExp(
+    '^' + pattern.replace(/[.+?^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*') + '$'
+  );
+  return regex.test(origin);
+}
+
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
     // No origin (curl / server-to-server / same-origin) is always allowed.
@@ -24,7 +36,9 @@ const corsOptions: cors.CorsOptions = {
     if (!isProduction || CONFIG.ALLOWED_ORIGINS.length === 0) {
       return callback(null, true);
     }
-    if (CONFIG.ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+    if (CONFIG.ALLOWED_ORIGINS.some((p) => originMatches(origin, p))) {
+      return callback(null, true);
+    }
     return callback(new Error(`CORS: origin ${origin} not allowed`));
   },
   credentials: true,
