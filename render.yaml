@@ -35,7 +35,7 @@ services:
       # wildcard patterns so Netlify deploy previews (deploy-preview-N--site,
       # branch--site, agent-XXX--site) are also accepted.
       - key: ALLOWED_ORIGINS
-        value: https://budgetwise-fcai-karim.netlify.app,https://*--budgetwise-fcai-karim.netlify.app
+        value: https://chic-muffin-75a7d8.netlify.app,https://*--chic-muffin-75a7d8.netlify.app,https://budgetwise-fcai-karim.netlify.app,https://*--budgetwise-fcai-karim.netlify.app
 
       # MongoDB Atlas connection string. Render will prompt for this on first deploy
       # because `sync: false` keeps it out of source control.
